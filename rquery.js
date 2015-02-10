@@ -140,7 +140,13 @@
     };
   });
 
-  var $R = global.$R = function (components) {
-    return new rQuery(components);
+  var $R = global.$R = function (components, selector) {
+    var $r = new rQuery(components);
+
+    if (selector) {
+      return $r.find(selector);
+    }
+
+    return $r;
   };
 }(this));
