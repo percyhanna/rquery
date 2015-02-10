@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/percyhanna/rquery.svg?branch=master)](https://travis-ci.org/percyhanna/rquery)
+
 # rQuery
 Like jQuery, but for React.js
 
