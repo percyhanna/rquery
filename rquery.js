@@ -98,7 +98,11 @@
 
   function rquery (components) {
     if (!isArray(components)) {
-      components = [components];
+      if (components) {
+        components = [components];
+      } else {
+        components = [];
+      }
     }
 
     this.components = components;
@@ -118,6 +122,14 @@
     return this._generate(function (component) {
       return TestUtils.isCompositeComponentWithType(component, type);
     });
+  };
+
+  rquery.prototype.get = function (index) {
+    if (this.components[index]) {
+      return new rquery(this.components[index]);
+    } else {
+      return new rquery();
+    }
   };
 
   rquery.prototype._generate = function (predicate) {
