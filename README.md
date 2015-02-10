@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/percyhanna/rquery.svg?branch=master)](https://travis-ci.org/percyhanna/rquery)
 
-# rQuery
+# rquery
 Like jQuery, but for React.js
 
 ## Vision
@@ -10,7 +10,7 @@ adding too much complexity because it was attempting to solve two problems: 1)
 making assertions of properties/rendered content and 2) traversing the rendered
 React tree to make those assertions.
 
-`rQuery` is meant to take over the rendered tree traversing responsibility from
+`rquery` is meant to take over the rendered tree traversing responsibility from
 `chai-react`, which will allow it to be used with any testing framework. It will
 also provide convenience wrappers for various common test actions, such as event
 dispatching.
@@ -19,7 +19,7 @@ dispatching.
 
 ### $R Factory
 
-The `$R` factory method returns a new instance of an `rQuery` object.
+The `$R` factory method returns a new instance of an `rquery` object.
 
 **Example**:
 
@@ -27,9 +27,9 @@ The `$R` factory method returns a new instance of an `rQuery` object.
 var $r = $R(component);
 ```
 
-### `rQuery` Class
+### `rquery` Class
 
-An instance of the `rQuery` class contains an array of components, and provides
+An instance of the `rquery` class contains an array of components, and provides
 an `Array`-like interface to directly access each component.
 
 **Example**:
@@ -43,11 +43,11 @@ $r[1] === component2; // true
 
 #### *Instance Methods*
 
-* `find (String selector)`: Returns a new `rQuery` instace with the
+* `find (String selector)`: Returns a new `rquery` instace with the
 components that match the provided selector (see [Selector](#tree-traversal)
 documentation).
 * `simulateEvent (String eventName, Object eventData)`: simulates
-triggering the `eventName` DOM event on the component(s) in the rQuery object.
+triggering the `eventName` DOM event on the component(s) in the rquery object.
 * `[eventName] (Object eventData)`: Convenience helper methods to trigger any
 supported React DOM event. See the [React documentation](http://facebook.github.io/react/docs/events.html)
 to read about the events that are currently supported.
@@ -128,7 +128,7 @@ given key/value pair.
 
 ## Usage with Test Suites
 
-The rQuery interface is meant to be generic enough to use with any assertion
+The rquery interface is meant to be generic enough to use with any assertion
 library/test runner.
 
 Sample usage with Chai BDD style assertions:
