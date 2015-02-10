@@ -1,7 +1,9 @@
 [![Build Status](https://travis-ci.org/percyhanna/rquery.svg?branch=master)](https://travis-ci.org/percyhanna/rquery)
 
 # rquery
-Like jQuery, but for React.js
+A [React](http://facebook.github.io/react/) tree navigation utility similar to
+jQuery, which can be useful for making assertions on your components in your
+tests.
 
 ## Vision
 [`chai-react`](https://github.com/percyhanna/chai-react/) was originally built
