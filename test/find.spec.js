@@ -124,4 +124,18 @@ describe('$R.find', function () {
       expect(this.$r[0].props).to.contain.key('target');
     });
   });
+
+  describe('$R.findComponent', function () {
+    before(function () {
+      this.$r = find().findComponent(reactClass);
+    });
+
+    it('finds one component', function () {
+      expect(this.$r).to.have.length(1);
+    });
+
+    it('component is instance of MyComponent', function () {
+      expect(this.$r[0]).to.be.componentOfType(reactClass);
+    });
+  });
 });

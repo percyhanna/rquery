@@ -114,6 +114,12 @@
     return this._generate(predicate);
   };
 
+  rquery.prototype.findComponent = function (type) {
+    return this._generate(function (component) {
+      return TestUtils.isCompositeComponentWithType(component, type);
+    });
+  };
+
   rquery.prototype._generate = function (predicate) {
     var matches = [].concat.apply([], this.components.map(function (component) {
       return TestUtils.findAllInRenderedTree(component, predicate);
