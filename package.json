@@ -1,0 +1,33 @@
+{
+  "author": "Andrew Hanna <percyhanna@gmail.com>",
+  "name": "rQuery",
+  "description": "jQuery-like functionality for React.",
+  "keywords": [
+    "react",
+    "jquery",
+    "testing"
+  ],
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/percyhanna/rQuery"
+  },
+  "bugs": {
+    "url": "https://github.com/percyhanna/rQuery/issues"
+  },
+  "scripts": {
+    "test": "mocha-phantomjs test/index.html"
+  },
+  "main": "./rQuery",
+  "engines": {
+    "node": ">= 0.4.0"
+  },
+  "devDependencies": {
+    "chai": "1",
+    "envify": "^1.2.1",
+    "es5-shim": "^4.0.0",
+    "mocha": "1",
+    "mocha-phantomjs": "3",
+    "react": "^0.12.2"
+  }
+}
