@@ -16,6 +16,7 @@ describe('$R.find', function () {
         return (
           React.createElement('div', { id: 'my-component', className: 'my-class some-other-class' },
             React.createElement('p', {}, 'Hello, world!'),
+            React.createElement('p', {}, 'More paragraphs.'),
             React.createElement('a', { className: 'button' }, 'Click me!'),
             React.createElement('button', { className: 'button button-default' }, 'Save')
           )
@@ -47,8 +48,26 @@ describe('$R.find', function () {
       expect(this.$r).to.have.length(1);
     });
 
-    it('component is instance of a tag', function () {
+    it('component is instance of "a" tag', function () {
       expect(this.$r[0]).to.be.componentWithTag('a');
+    });
+  });
+
+  describe('DOM selector with multiple matches', function () {
+    before(function () {
+      this.$r = find('p');
+    });
+
+    it('finds two components', function () {
+      expect(this.$r).to.have.length(2);
+    });
+
+    it('first component is instance of "p" tag', function () {
+      expect(this.$r[0]).to.be.componentWithTag('p');
+    });
+
+    it('second component is instance of "p" tag', function () {
+      expect(this.$r[1]).to.be.componentWithTag('p');
     });
   });
 });
