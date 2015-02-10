@@ -70,4 +70,22 @@ describe('$R.find', function () {
       expect(this.$r[1]).to.be.componentWithTag('p');
     });
   });
+
+  describe('DOM class selector', function () {
+    before(function () {
+      this.$r = find('.button');
+    });
+
+    it('finds two components', function () {
+      expect(this.$r).to.have.length(2);
+    });
+
+    it('first component is instance of "a" tag', function () {
+      expect(this.$r[0]).to.be.componentWithTag('a');
+    });
+
+    it('second component is instance of "button" tag', function () {
+      expect(this.$r[1]).to.be.componentWithTag('button');
+    });
+  });
 });

@@ -31,6 +31,20 @@
           return false;
         };
       }
+    },
+    {
+      matcher: /^\.(\w+)/,
+      buildPredicate: function (match) {
+        return function (component) {
+          if (TestUtils.isDOMComponent(component)
+              && component.props.className) {
+            var classes = component.props.className.split(' ');
+            return classes.indexOf(match[1]) !== -1;
+          }
+
+          return false;
+        };
+      }
     }
   ];
 
