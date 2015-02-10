@@ -90,6 +90,20 @@ describe('rquery', function () {
       });
     });
 
+    describe('DOM class selector with dash', function () {
+      before(function () {
+        this.$r = run('.my-class');
+      });
+
+      it('find one component', function () {
+        expect(this.$r).to.have.length(1);
+      });
+
+      it('first component is instance of "a" tag', function () {
+        expect(this.$r[0]).to.be.componentWithTag('div');
+      });
+    });
+
     describe('attribute selector', function () {
       before(function () {
         this.$r = run('[target]');

@@ -47,7 +47,7 @@
       }
     },
     {
-      matcher: /^\.(\w+)/,
+      matcher: /^\.([^\s]+)/,
       buildPredicate: function (match) {
         return function (component) {
           if (TestUtils.isDOMComponent(component)
