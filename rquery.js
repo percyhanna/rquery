@@ -108,6 +108,38 @@
     return new rQuery(matches);
   };
 
+  rQuery.prototype.simulateEvent = function (eventName, eventData) {
+    for (var i = 0; i < this.components.length; i++) {
+      TestUtils.Simulate[eventName](this.components[i].getDOMNode(), eventData);
+    }
+  };
+
+  var EVENT_NAMES = [
+    // clipboard events
+    'copy', 'cut', 'paste',
+    // keyboard events
+    'keyDown', 'keyPress', 'keyUp',
+    // focus events
+    'focus', 'blur',
+    // form events
+    'change', 'input', 'submit',
+    // mouse events
+    'click', 'mouseDown', 'mouseEnter', 'mouseLeave', 'mouseMove', 'mouseOut', 'mouseOver', 'mouseUp',
+    'doubleClick', 'drag', 'dragEnd', 'dragEnter', 'dragExit', 'dragLeave', 'dragOver', 'dragStart', 'drop',
+    // touch events
+    'touchCancel', 'touchEnd', 'touchMove', 'touchStart',
+    // UI events
+    'scroll',
+    // wheel events
+    'wheel'
+  ];
+
+  EVENT_NAMES.forEach(function (eventName) {
+    rQuery.prototype[eventName] = function (eventData) {
+      this.simulateEvent(eventName, eventData);
+    };
+  });
+
   var $R = global.$R = function (components) {
     return new rQuery(components);
   };
