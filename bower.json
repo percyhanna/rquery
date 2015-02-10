@@ -1,7 +1,7 @@
 {
   "name": "rquery",
   "main": "rquery.js",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "authors": [
     "Andrew Hanna <percyhanna@gmail.com>"
   ],
