@@ -12,7 +12,7 @@
       matcher: /^([A-Z]\w*)/,
       buildPredicate: function (match) {
         return function (component) {
-          if (typeof component._currentElement.type !== 'string') {
+          if (TestUtils.isCompositeComponent(component)) {
             return component._currentElement.type.displayName === match[1];
           }
 
@@ -24,8 +24,8 @@
       matcher: /^([a-z]\w*)/,
       buildPredicate: function (match) {
         return function (component) {
-          if (typeof component._currentElement.type === 'string') {
-            return component._currentElement.type === match[1];
+          if (TestUtils.isDOMComponent(component)) {
+            return component._tag === match[1];
           }
 
           return false;
