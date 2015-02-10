@@ -45,6 +45,17 @@
           return false;
         };
       }
+    },
+    {
+      matcher: /^\[(\w+)\]/,
+      buildPredicate: function (match) {
+        return function (component) {
+          return (
+            TestUtils.isDOMComponent(component)
+            && match[1] in component.props
+          );
+        };
+      }
     }
   ];
 

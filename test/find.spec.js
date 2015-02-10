@@ -17,7 +17,7 @@ describe('$R.find', function () {
           React.createElement('div', { id: 'my-component', className: 'my-class some-other-class' },
             React.createElement('p', {}, 'Hello, world!'),
             React.createElement('p', {}, 'More paragraphs.'),
-            React.createElement('a', { className: 'button' }, 'Click me!'),
+            React.createElement('a', { className: 'button', target: '_blank' }, 'Click me!'),
             React.createElement('button', { className: 'button button-default' }, 'Save')
           )
         );
@@ -86,6 +86,24 @@ describe('$R.find', function () {
 
     it('second component is instance of "button" tag', function () {
       expect(this.$r[1]).to.be.componentWithTag('button');
+    });
+  });
+
+  describe('attribute selector', function () {
+    before(function () {
+      this.$r = find('[target]');
+    });
+
+    it('finds one component', function () {
+      expect(this.$r).to.have.length(1);
+    });
+
+    it('component is instance of "a" tag', function () {
+      expect(this.$r[0]).to.be.componentWithTag('a');
+    });
+
+    it('component has target property', function () {
+      expect(this.$r[0].props).to.contain.key('target');
     });
   });
 });
