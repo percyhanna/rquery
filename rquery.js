@@ -61,7 +61,7 @@
       }
     },
     {
-      matcher: /^\[(\w+)(?:=(.*))?\]/,
+      matcher: /^\[([^\s=]+)(?:=(.*))?\]/,
       buildPredicate: function (match) {
         return function (component) {
           var hasProp = TestUtils.isDOMComponent(component)
