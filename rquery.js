@@ -9,7 +9,7 @@
 
   var SELECTORS = [
     {
-      matcher: /([A-Z]\w*)/,
+      matcher: /^([A-Z]\w*)/,
       buildPredicate: function (match) {
         return function (component) {
           if (typeof component._currentElement.type !== 'string') {
@@ -21,7 +21,7 @@
       }
     },
     {
-      matcher: /([a-z]\w*)/,
+      matcher: /^([a-z]\w*)/,
       buildPredicate: function (match) {
         return function (component) {
           if (typeof component._currentElement.type === 'string') {
