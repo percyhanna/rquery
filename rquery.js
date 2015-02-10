@@ -1,4 +1,18 @@
-(function (global) {
+(function (rquery) {
+  // Module systems magic dance.
+  if (typeof require === "function" && typeof exports === "object" && typeof module === "object") {
+    // NodeJS
+    module.exports = rquery;
+  } else if (typeof define === "function" && define.amd) {
+    // AMD
+    define(['react'], function (React) {
+      return rquery(React);
+    });
+  } else {
+    // Other environment (usually <script> tag): assume React is already loaded.
+    window.$R = rquery(React);
+  }
+}(function (React) {
   'use strict';
 
   var TestUtils = React.addons.TestUtils;
@@ -140,7 +154,7 @@
     };
   });
 
-  var $R = global.$R = function (components, selector) {
+  var $R = function (components, selector) {
     var $r = new rquery(components);
 
     if (selector) {
@@ -149,4 +163,6 @@
 
     return $r;
   };
-}(this));
+
+  return $R;
+}));
