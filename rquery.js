@@ -82,7 +82,7 @@
     return predicate;
   };
 
-  function rQuery (components) {
+  function rquery (components) {
     if (!isArray(components)) {
       components = [components];
     }
@@ -95,20 +95,20 @@
     }
   };
 
-  rQuery.prototype.find = function (selector) {
+  rquery.prototype.find = function (selector) {
     var predicate = parseSelector(selector);
     return this._generate(predicate);
   };
 
-  rQuery.prototype._generate = function (predicate) {
+  rquery.prototype._generate = function (predicate) {
     var matches = [].concat.apply([], this.components.map(function (component) {
       return TestUtils.findAllInRenderedTree(component, predicate);
     }));
 
-    return new rQuery(matches);
+    return new rquery(matches);
   };
 
-  rQuery.prototype.simulateEvent = function (eventName, eventData) {
+  rquery.prototype.simulateEvent = function (eventName, eventData) {
     for (var i = 0; i < this.components.length; i++) {
       TestUtils.Simulate[eventName](this.components[i].getDOMNode(), eventData);
     }
@@ -135,13 +135,13 @@
   ];
 
   EVENT_NAMES.forEach(function (eventName) {
-    rQuery.prototype[eventName] = function (eventData) {
+    rquery.prototype[eventName] = function (eventData) {
       this.simulateEvent(eventName, eventData);
     };
   });
 
   var $R = global.$R = function (components, selector) {
-    var $r = new rQuery(components);
+    var $r = new rquery(components);
 
     if (selector) {
       return $r.find(selector);
