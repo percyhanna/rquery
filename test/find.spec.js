@@ -3,9 +3,9 @@ describe('$R.find', function () {
 
   var TestUtils = React.addons.TestUtils;
 
-  function find (selector) {
+  function run (selector) {
     component = TestUtils.renderIntoDocument(React.createElement(reactClass));
-    return $R(component).find(selector);
+    return $R(component, selector);
   };
 
   before(function () {
@@ -27,7 +27,7 @@ describe('$R.find', function () {
 
   describe('text description of component', function () {
     before(function () {
-      this.$r = find('MyComponent');
+      this.$r = run('MyComponent');
     });
 
     it('finds one component', function () {
@@ -41,7 +41,7 @@ describe('$R.find', function () {
 
   describe('text description of DOM component', function () {
     before(function () {
-      this.$r = find('a');
+      this.$r = run('a');
     });
 
     it('finds one component', function () {
@@ -55,7 +55,7 @@ describe('$R.find', function () {
 
   describe('DOM selector with multiple matches', function () {
     before(function () {
-      this.$r = find('p');
+      this.$r = run('p');
     });
 
     it('finds two components', function () {
@@ -73,7 +73,7 @@ describe('$R.find', function () {
 
   describe('DOM class selector', function () {
     before(function () {
-      this.$r = find('.button');
+      this.$r = run('.button');
     });
 
     it('finds two components', function () {
@@ -91,7 +91,7 @@ describe('$R.find', function () {
 
   describe('attribute selector', function () {
     before(function () {
-      this.$r = find('[target]');
+      this.$r = run('[target]');
     });
 
     it('finds one component', function () {
@@ -109,7 +109,7 @@ describe('$R.find', function () {
 
   describe('attribute value selector', function () {
     before(function () {
-      this.$r = find('[target=_blank]');
+      this.$r = run('[target=_blank]');
     });
 
     it('finds one component', function () {
@@ -127,7 +127,7 @@ describe('$R.find', function () {
 
   describe('$R.findComponent', function () {
     before(function () {
-      this.$r = find().findComponent(reactClass);
+      this.$r = run().findComponent(reactClass);
     });
 
     it('finds one component', function () {
