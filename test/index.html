@@ -1,0 +1,24 @@
+<html>
+  <head>
+    <title>Mocha</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="stylesheet" href="../node_modules/mocha/mocha.css" />
+    <script src="../node_modules/es5-shim/es5-shim.js"></script>
+    <script src="../node_modules/react/dist/react-with-addons.js"></script>
+    <script src="../node_modules/mocha/mocha.js"></script>
+    <script src="../node_modules/chai/chai.js"></script>
+    <script src="../node_modules/chai-react/chai-react.js"></script>
+    <script src="../rquery.js"></script>
+    <script>
+      mocha.setup('bdd');
+      var expect = chai.expect;
+      window.onload = function () {
+        (window.mochaPhantomJS || window.mocha).run();
+      };
+    </script>
+    <script src="find.spec.js"></script>
+  </head>
+  <body>
+    <div id="mocha"></div>
+  </body>
+</html>
