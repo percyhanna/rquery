@@ -19,6 +19,18 @@
           return false;
         };
       }
+    },
+    {
+      matcher: /([a-z]\w*)/,
+      buildPredicate: function (match) {
+        return function (component) {
+          if (typeof component._currentElement.type === 'string') {
+            return component._currentElement.type === match[1];
+          }
+
+          return false;
+        };
+      }
     }
   ];
 
