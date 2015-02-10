@@ -106,4 +106,22 @@ describe('$R.find', function () {
       expect(this.$r[0].props).to.contain.key('target');
     });
   });
+
+  describe('attribute value selector', function () {
+    before(function () {
+      this.$r = find('[target=_blank]');
+    });
+
+    it('finds one component', function () {
+      expect(this.$r).to.have.length(1);
+    });
+
+    it('component is instance of "a" tag', function () {
+      expect(this.$r[0]).to.be.componentWithTag('a');
+    });
+
+    it('component has target property', function () {
+      expect(this.$r[0].props).to.contain.key('target');
+    });
+  });
 });

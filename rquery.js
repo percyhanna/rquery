@@ -47,13 +47,17 @@
       }
     },
     {
-      matcher: /^\[(\w+)\]/,
+      matcher: /^\[(\w+)(?:=(.*))?\]/,
       buildPredicate: function (match) {
         return function (component) {
-          return (
-            TestUtils.isDOMComponent(component)
-            && match[1] in component.props
-          );
+          var hasProp = TestUtils.isDOMComponent(component)
+                        && match[1] in component.props;
+
+          if (match[2]) {
+            return component.props[match[1]] === match[2];
+          }
+
+          return hasProp;
         };
       }
     }
