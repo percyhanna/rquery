@@ -46,7 +46,7 @@ $r[1] === component2; // true
 #### *Instance Methods*
 
 * `find (String selector)`: Returns a new `rquery` instace with the
-components that match the provided selector (see [Selector](#tree-traversal)
+components that match the provided selector (see [Selector](#selectors)
 documentation).
 * `simulateEvent (String eventName, Object eventData)`: simulates
 triggering the `eventName` DOM event on the component(s) in the rquery object.
