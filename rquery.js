@@ -125,11 +125,7 @@
   };
 
   rquery.prototype.get = function (index) {
-    if (this.components[index]) {
-      return new rquery(this.components[index]);
-    } else {
-      return new rquery();
-    }
+    return this.components[index];
   };
 
   rquery.prototype._generate = function (predicate) {

@@ -180,25 +180,21 @@ describe('rquery', function () {
 
     describe('when accessing a valid index', function () {
       before(function () {
-        this.$getr = this.$r.get(1);
+        this.value = this.$r.get(1);
       });
 
-      it('returns a new rquery instance with one component', function () {
-        expect(this.$getr).to.have.length(1);
-      });
-
-      it('returns a new rquery instance with the correct component', function () {
-        expect(this.$getr[0]).to.equal(this.$r[1]);
+      it('returns the component directly', function () {
+        expect(this.value).to.equal(this.$r[1]);
       });
     });
 
     describe('when accessing an invalid index', function () {
       before(function () {
-        this.$getr = this.$r.get(3);
+        this.value = this.$r.get(3);
       });
 
-      it('returns a new rquery instance with zero components', function () {
-        expect(this.$getr).to.have.length(0);
+      it('returns undefined', function () {
+        expect(this.value).to.be.undefined;
       });
     });
   });
