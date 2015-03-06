@@ -188,7 +188,7 @@ describe('Selectors', function () {
 
   describe('attribute value selector', function () {
     before(function () {
-      this.$r = run('[target=_blank]');
+      this.$r = run('[target="_blank"]');
     });
 
     it('finds one component', function () {

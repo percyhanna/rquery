@@ -112,14 +112,23 @@
       }
     },
     {
-      matcher: /^\[([^\s=]+)(?:=(.*))?\]/,
+      matcher: /^\[([^\s~|^$*=]+)(?:([~|^$*]?=)"((?:\\"|.)*)")?\]/,
       runStep: function (context, match) {
         context.filterScope(function (component) {
           var hasProp = TestUtils.isDOMComponent(component)
                         && match[1] in component.props;
 
           if (match[2]) {
-            return component.props[match[1]] === match[2];
+            var value = match[3].replace('\\"', '"');
+
+            switch (match[2]) {
+              case '=':
+                return component.props[match[1]] === value;
+
+              default:
+                console.log('operator: ' + match[2]);
+                break;
+            }
           }
 
           return hasProp;
