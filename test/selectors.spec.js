@@ -9,6 +9,16 @@ describe('Selectors', function () {
   };
 
   before(function () {
+    var childComponent = React.createClass({
+      displayName: 'ChildComponent',
+
+      render: function () {
+        return (
+          React.createElement('button', { className: 'child-component' }, 'my child component')
+        );
+      }
+    });
+
     reactClass = React.createClass({
       displayName: "MyComponent",
 
@@ -19,7 +29,8 @@ describe('Selectors', function () {
             React.createElement('p', {}, React.createElement('span', {}, 'not descendent')),
             React.createElement('a', { className: 'button', target: '_blank', 'data-something': 'hello ' }, 'Click me!'),
             React.createElement('button', { className: 'button button-default' }, 'Save'),
-            React.createElement('span', {}, 'descendent')
+            React.createElement('span', {}, 'descendent'),
+            React.createElement(childComponent)
           )
         );
       }
@@ -89,13 +100,43 @@ describe('Selectors', function () {
       expect(this.$r).to.have.length(1);
     });
 
-    describe('internal composite components', function () {
+    describe('internal composite DOM components', function () {
       before(function () {
         this.$r = run('div > button');
       });
 
       it('finds the button component', function () {
+        expect(this.$r).to.have.length(2);
+      });
+    });
+
+    describe('internal composite components', function () {
+      before(function () {
+        this.$r = run('div > ChildComponent');
+      });
+
+      it('finds the button component', function () {
         expect(this.$r).to.have.length(1);
+      });
+    });
+  });
+
+  describe('composite selector with child selector', function () {
+    before(function () {
+      this.$r = run('MyComponent > span');
+    });
+
+    it('finds all child span components', function () {
+      expect(this.$r).to.have.length(1);
+    });
+
+    describe('composite component\'s DOM component', function () {
+      before(function () {
+        this.$r = run('MyComponent > div');
+      });
+
+      it('does not return the composite component\'s DOM component', function () {
+        expect(this.$r).to.have.length(0);
       });
     });
   });

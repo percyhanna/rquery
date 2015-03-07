@@ -39,6 +39,14 @@
       .value();
   }
 
+  function includeCompositeComponents (component) {
+    if (component._renderedComponent) {
+      return [component, component._renderedComponent];
+    }
+
+    return [component];
+  }
+
   var STEP_DEFINITIONS = [
     // scope modifiers
     {
@@ -46,11 +54,15 @@
       runStep: function (context, match) {
         var newScope = _(context.currentScope)
             .map(function (component) {
+              component = component._renderedComponent || component;
+
               return TestUtils.findAllInRenderedTree(component, function (descendent) {
                 return descendent._mountDepth === component._mountDepth + 1;
               });
             })
             .compact()
+            .flatten()
+            .map(includeCompositeComponents)
             .flatten()
             .value();
 
@@ -143,7 +155,7 @@
                 return prop.indexOf(value) !== -1;
 
               default:
-                console.log('operator: ' + match[2]);
+                throw new Error('Unknown attribute operator: ' + operator);
                 break;
             }
           }
@@ -199,13 +211,14 @@
   }
 
   Context.prototype.setScope = function (scope) {
-    this.currentScope = scope.map(function (component) {
-      return component._renderedComponent || component;
-    });
+    this.currentScope = _(scope)
+      .map(includeCompositeComponents)
+      .flatten()
+      .value();
   };
 
   Context.prototype.resetScope = function () {
-    this.currentScope = this.defaultScope.slice();
+    this.setScope(this.defaultScope);
   };
 
   Context.prototype.filterScope = function (predicate) {
