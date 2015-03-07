@@ -7,7 +7,7 @@
     "jquery",
     "testing"
   ],
-  "version": "0.0.6",
+  "version": "1.0.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/percyhanna/rquery"
