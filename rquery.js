@@ -115,15 +115,32 @@
       matcher: /^\[([^\s~|^$*=]+)(?:([~|^$*]?=)"((?:\\"|.)*)")?\]/,
       runStep: function (context, match) {
         context.filterScope(function (component) {
-          var hasProp = TestUtils.isDOMComponent(component)
-                        && match[1] in component.props;
+          var propName = match[1] === 'class' ? 'className' : match[1],
+              hasProp = TestUtils.isDOMComponent(component)
+                        && propName in component.props;
 
           if (match[2]) {
-            var value = match[3].replace('\\"', '"');
+            var value = match[3].replace('\\"', '"'),
+                prop = String(component.props[propName]);
 
             switch (match[2]) {
               case '=':
-                return component.props[match[1]] === value;
+                return prop === value;
+
+              case '~=':
+                return prop.split(/\s+/).indexOf(value) !== -1;
+
+              case '|=':
+                return prop === value || prop.indexOf(value + '-') === 0;
+
+              case '^=':
+                return prop.indexOf(value) === 0;
+
+              case '$=':
+                return prop.indexOf(value) === prop.length - value.length;
+
+              case '*=':
+                return prop.indexOf(value) !== -1;
 
               default:
                 console.log('operator: ' + match[2]);

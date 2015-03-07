@@ -203,4 +203,94 @@ describe('Selectors', function () {
       expect(this.$r[0].props).to.contain.key('target');
     });
   });
+
+  describe('attribute ~= selector', function () {
+    before(function () {
+      this.$r = run('[class~="my-class"]');
+    });
+
+    it('finds one component', function () {
+      expect(this.$r).to.have.length(1);
+    });
+
+    it('component is instance of "a" tag', function () {
+      expect(this.$r[0]).to.be.componentWithTag('a');
+    });
+
+    it('component has target property', function () {
+      expect(this.$r[0].props).to.contain.key('className');
+    });
+  });
+
+  describe('attribute |= selector', function () {
+    before(function () {
+      this.$r = run('[class|="my"]');
+    });
+
+    it('finds one component', function () {
+      expect(this.$r).to.have.length(1);
+    });
+
+    it('component is instance of "a" tag', function () {
+      expect(this.$r[0]).to.be.componentWithTag('a');
+    });
+
+    it('component has target property', function () {
+      expect(this.$r[0].props).to.contain.key('className');
+    });
+  });
+
+  describe('attribute ^= selector', function () {
+    before(function () {
+      this.$r = run('[data-something^="he"]');
+    });
+
+    it('finds one component', function () {
+      expect(this.$r).to.have.length(1);
+    });
+
+    it('component is instance of "a" tag', function () {
+      expect(this.$r[0]).to.be.componentWithTag('a');
+    });
+
+    it('component has target property', function () {
+      expect(this.$r[0].props).to.contain.key('data-something');
+    });
+  });
+
+  describe('attribute $= selector', function () {
+    before(function () {
+      this.$r = run('[data-something$="lo "]');
+    });
+
+    it('finds one component', function () {
+      expect(this.$r).to.have.length(1);
+    });
+
+    it('component is instance of "a" tag', function () {
+      expect(this.$r[0]).to.be.componentWithTag('a');
+    });
+
+    it('component has target property', function () {
+      expect(this.$r[0].props).to.contain.key('data-something');
+    });
+  });
+
+  describe('attribute *= selector', function () {
+    before(function () {
+      this.$r = run('[data-something*="ell"]');
+    });
+
+    it('finds one component', function () {
+      expect(this.$r).to.have.length(1);
+    });
+
+    it('component is instance of "a" tag', function () {
+      expect(this.$r[0]).to.be.componentWithTag('a');
+    });
+
+    it('component has target property', function () {
+      expect(this.$r[0].props).to.contain.key('data-something');
+    });
+  });
 });
