@@ -114,19 +114,41 @@ $R(component, '[onClick]');
 Traverses the tree to find components that have a value defined for the given
 property name.
 
-#### Attribute Value Selector
+*Note:* Although these are labeled as *attribute* selectors, they are really
+*property* selectors. In other words, they match properties being passed to a
+DOM/Composite component, not actual DOM attributes being rendered.
+
+#### Attribute Value Selectors
 
 **Example**:
 
 ```javascript
-$R(component).find('[target=_blank]');
+$R(component).find('[target="_blank"]');
 $R(component, '[href=http://www.github.com/]');
 ```
+
+**Supported Operators**:
+
+`rquery` supports the [CSS Selectors level 3 spec]
+(http://dev.w3.org/csswg/selectors-3/#attribute-selectors):
+
+* `[att="val"]`: equality
+* `[att~="val"]`: whitespace-separated list
+* `[att|="val"]`: namespace-prefixed (e.g. `val` or `val-*`)
+* `[att^="val"]`: prefix
+* `[att$="val"]`: suffix
+* `[att*="val"]`: substring
 
 **Description**:
 
 Traverses the tree to find components with a property value that matches the
 given key/value pair.
+
+*Note:* Although these are labeled as *attribute* selectors, they are really
+*property* selectors. In other words, they match properties being passed to a
+DOM/Composite component, not actual DOM attributes being rendered. For complex
+property values (e.g. arrays, objects, etc.), the value matchers are less useful
+as `rquery` doesn't currently support any complex value matching.
 
 ## Usage with Test Suites
 
