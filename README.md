@@ -150,6 +150,9 @@ DOM/Composite component, not actual DOM attributes being rendered. For complex
 property values (e.g. arrays, objects, etc.), the value matchers are less useful
 as `rquery` doesn't currently support any complex value matching.
 
+*Note:* All values *must* be provided as double-quoted strings. `[att="val"]` is
+valid, but `[att=val]` and `[att='val']` are not.
+
 ## Usage with Test Suites
 
 The rquery interface is meant to be generic enough to use with any assertion
