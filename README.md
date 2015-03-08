@@ -124,7 +124,7 @@ DOM/Composite component, not actual DOM attributes being rendered.
 
 ```javascript
 $R(component).find('[target="_blank"]');
-$R(component, '[href=http://www.github.com/]');
+$R(component, '[href="http://www.github.com/"]');
 ```
 
 **Supported Operators**:
