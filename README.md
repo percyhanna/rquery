@@ -17,6 +17,26 @@ React tree to make those assertions.
 also provide convenience wrappers for various common test actions, such as event
 dispatching.
 
+## Setup
+
+### Node.js, Webpack, Browserify
+
+```javascript
+var _ = require('lodash');
+var React = require('react/addons);
+var $R = require('rquery)(_, React);
+```
+
+### Browser with Scripttags
+
+Include `react-with-addons` and `lodash` in the page, then you get
+
+```javascript
+window.$R
+```
+as a global.
+
+
 ## Usage
 
 ### $R Factory
