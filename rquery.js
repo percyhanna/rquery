@@ -5,14 +5,14 @@
     module.exports = rquery;
   } else if (typeof define === "function" && define.amd) {
     // AMD
-    define(['react'], function (React) {
-      return rquery(React);
+    define(['react', 'lodash'], function (React, _) {
+      return rquery(_, React);
     });
   } else {
     // Other environment (usually <script> tag): assume React is already loaded.
-    window.$R = rquery(React);
+    window.$R = rquery(window._, React);
   }
-}(function (React) {
+}(function (_, React) {
   'use strict';
 
   var TestUtils = React.addons.TestUtils;
