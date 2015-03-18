@@ -284,9 +284,9 @@
   };
 
   rquery.prototype.text = function () {
-    return _.reduce(this.components, function(memo, comp) {
-      return memo += comp.getDOMNode().innerText || comp.getDOMNode().textContent;
-    }, '')
+    return _.map(this.components, function(component) {
+      return component.getDOMNode().innerText || component.getDOMNode().textContent;
+    }).join('');
   };
 
   var EVENT_NAMES = [
