@@ -269,6 +269,10 @@
     return this.components[index];
   };
 
+  rquery.prototype.at = function (index) {
+    return new rquery(this.components[index]);
+  };
+
   rquery.prototype._generate = function (predicate) {
     var matches = [].concat.apply([], this.components.map(function (component) {
       return TestUtils.findAllInRenderedTree(component, predicate);
@@ -323,6 +327,10 @@
     }
 
     return $r;
+  };
+
+  $R.isRQuery = function (obj) {
+    return obj instanceof rquery;
   };
 
   return $R;

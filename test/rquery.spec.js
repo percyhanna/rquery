@@ -47,6 +47,44 @@ describe('#get', function () {
   });
 });
 
+describe('#at', function () {
+  before(function () {
+    this.$r = $R(['p', 'a']);
+  });
+
+  describe('when accessing a valid index', function () {
+    before(function () {
+      this.value = this.$r.at(0);
+    });
+
+    it('returns a new rquery object', function () {
+      expect($R.isRQuery(this.value)).to.equal(true);
+    });
+
+    it('returns only one item', function () {
+      expect(this.value.length).to.equal(1);
+    });
+
+    it('returns the item requested', function () {
+      expect(this.value[0]).to.equal('p');
+    });
+  });
+
+  describe('when accessing an invalid index', function () {
+    before(function () {
+      this.value = this.$r.at(2);
+    });
+
+    it('returns an rquery object', function () {
+      expect($R.isRQuery(this.value)).to.equal(true);
+    });
+
+    it('returns an empty rquery object', function () {
+      expect(this.value.length).to.be.equal(0);
+    });
+  });
+});
+
 describe('#text', function () {
   var TestUtils = React.addons.TestUtils;
 
