@@ -283,6 +283,12 @@
     }
   };
 
+  rquery.prototype.text = function () {
+    return _.map(this.components, function(component) {
+      return component.getDOMNode().innerText || component.getDOMNode().textContent;
+    }).join('');
+  };
+
   var EVENT_NAMES = [
     // clipboard events
     'copy', 'cut', 'paste',

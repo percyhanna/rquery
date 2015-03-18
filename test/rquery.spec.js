@@ -46,3 +46,33 @@ describe('#get', function () {
     });
   });
 });
+
+describe('#text', function () {
+  var TestUtils = React.addons.TestUtils;
+
+  before(function () {
+    this.reactClass = React.createClass({
+      render: function () {
+        var p1 = React.createElement('p', null, 'Te'),
+            p2 = React.createElement('p', null, 'xt');
+
+        return React.createElement('div', null, p1, p2);
+      }
+    });
+
+    this.component = TestUtils.renderIntoDocument(React.createElement(this.reactClass));
+    this.$r = $R(this.component).findComponent(this.reactClass);
+  });
+
+  context('when called on multiple components', function() {
+    it('returns the inner text of the selected components', function() {
+      expect(this.$r.find('p').text()).to.eq('Text');
+    });
+  });
+
+  context('when called on single component', function() {
+    it('returns the inner text of the selected component', function() {
+      expect(this.$r.text()).to.eq('Text');
+    });
+  });
+});
