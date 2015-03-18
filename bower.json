@@ -5,14 +5,17 @@
   "authors": [
     "Andrew Hanna <percyhanna@gmail.com>"
   ],
-  "description": "jQuery-like functionality for React.",
+  "description": "jQuery-like functionality for React to facilitate testing.",
   "moduleType": [
     "globals"
   ],
   "keywords": [
     "react",
-    "testing",
-    "assertion"
+    "jquery",
+    "selector",
+    "query",
+    "find",
+    "testing"
   ],
   "license": "MIT",
   "ignore": [

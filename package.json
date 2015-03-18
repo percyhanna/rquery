@@ -1,10 +1,13 @@
 {
   "author": "Andrew Hanna <percyhanna@gmail.com>",
   "name": "rquery",
-  "description": "jQuery-like functionality for React.",
+  "description": "jQuery-like functionality for React to facilitate testing.",
   "keywords": [
     "react",
     "jquery",
+    "selector",
+    "query",
+    "find",
     "testing"
   ],
   "version": "1.1.1",
