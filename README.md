@@ -49,7 +49,7 @@ The `$R` factory method returns a new instance of an `rquery` object.
 var $r = $R(component);
 ```
 
-### `rquery` Class
+## `rquery` object
 
 An instance of the `rquery` class contains an array of components, and provides
 an `Array`-like interface to directly access each component.
@@ -63,16 +63,44 @@ $r[0] === component1; // true
 $r[1] === component2; // true
 ```
 
-#### *Instance Methods*
+### *Instance Methods*
 
-* `find (String selector)`: Returns a new `rquery` instace with the
-components that match the provided selector (see [Selector](#selectors)
-documentation).
-* `simulateEvent (String eventName, Object eventData)`: simulates
-triggering the `eventName` DOM event on the component(s) in the rquery object.
-* `[eventName] (Object eventData)`: Convenience helper methods to trigger any
-supported React DOM event. See the [React documentation](http://facebook.github.io/react/docs/events.html)
-to read about the events that are currently supported.
+#### `find`
+
+```javascript
+$r.find(selector)
+```
+
+Returns a new `rquery` instance with the components that match the provided
+selector (see [Selector](#selectors) documentation).
+
+#### `text`
+
+```javascript
+$r.text()
+```
+
+Returns the text contents of the component(s) in the `$r` object. Similar to
+jQuery's `text()` method (read-only).
+
+#### `simulateEvent`
+
+```javascript
+simulateEvent(eventName, eventData)
+```
+
+Simulates triggering the `eventName` DOM event on the component(s) in the rquery
+object.
+
+#### Event helpers
+
+```javascript
+[eventName](eventData)
+```
+
+Convenience helper methods to trigger any supported React DOM event. See the
+[React documentation](http://facebook.github.io/react/docs/events.html) to read
+about the events that are currently supported.
 
 ### Selectors
 
