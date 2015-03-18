@@ -26,6 +26,7 @@
     "tests"
   ],
   "dependencies": {
+    "lodash": "~3.4.0"
   },
   "homepage": "https://github.com/percyhanna/rquery"
 }
