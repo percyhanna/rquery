@@ -284,8 +284,8 @@
   };
 
   rquery.prototype.text = function () {
-    return this.components.reduce(function(prev, curr) {
-      return prev += curr.getDOMNode().innerText || curr.getDOMNode().textContent;
+    return _.reduce(this.components, function(memo, comp) {
+      return memo += comp.getDOMNode().innerText || comp.getDOMNode().textContent;
     }, '')
   };
 
