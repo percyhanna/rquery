@@ -307,6 +307,19 @@
     }).join('');
   };
 
+  rquery.prototype.val = function (value) {
+    _.each(this.components, function(component) {
+      var node = component.getDOMNode();
+
+      if ('value' in node) {
+        node.value = value;
+        $R(component).change();
+      }
+    });
+
+    return this;
+  };
+
   var EVENT_NAMES = [
     // clipboard events
     'copy', 'cut', 'paste',
