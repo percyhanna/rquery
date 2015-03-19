@@ -78,4 +78,29 @@ describe('Events', function () {
       expect(stubs.div).to.not.have.been.called;
     });
   });
+
+  describe('#ensureClick', function () {
+    describe('when 0 components are found', function () {
+      it('throws an error', function () {
+        expect(function () {
+          $R(component, 'h1').ensureClick();
+        }).to.throw('Called ensureClick, but current context has 0 components. ensureClick only works when 1 component is present.');
+      });
+    });
+
+    describe('when 2 components are found', function () {
+      it('throws an error', function () {
+        expect(function () {
+          $R(component, 'button').ensureClick();
+        }).to.throw('Called ensureClick, but current context has 2 components. ensureClick only works when 1 component is present.');
+      });
+    });
+
+    describe('when 1 component is found', function () {
+      it('clicks the component', function () {
+        $R(component, 'a').ensureClick();
+        expect(stubs.a).to.have.been.called;
+      });
+    });
+  });
 });
