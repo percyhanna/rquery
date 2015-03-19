@@ -331,6 +331,15 @@
     rquery.prototype[eventName] = function (eventData) {
       return this.simulateEvent(eventName, eventData);
     };
+
+    var name = 'ensure' + eventName[0].toUpperCase() + eventName.substr(1);
+    rquery.prototype[name] = function (eventData) {
+      if (this.length !== 1) {
+        throw new Error('Called ' + name + ', but current context has ' + this.length + ' components. ' + name + ' only works when 1 component is present.');
+      }
+
+      return this.simulateEvent(eventName, eventData);
+    };
   });
 
   var $R = function (components, selector) {
