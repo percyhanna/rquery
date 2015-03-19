@@ -308,16 +308,23 @@
   };
 
   rquery.prototype.val = function (value) {
-    _.each(this.components, function(component) {
-      var node = component.getDOMNode();
+    if (value !== undefined) {
+      _.each(this.components, function(component) {
+        var node = component.getDOMNode();
 
-      if ('value' in node) {
-        node.value = value;
-        $R(component).change();
+        if ('value' in node) {
+          node.value = value;
+          $R(component).change();
+        }
+      });
+
+      return this;
+    } else {
+      if (this.components[0]) {
+        return this.components[0].getDOMNode().value;
       }
-    });
+    }
 
-    return this;
   };
 
   var EVENT_NAMES = [
@@ -365,6 +372,7 @@
     return $r;
   };
 
+  $R.rquery = rquery;
   $R.isRQuery = function (obj) {
     return obj instanceof rquery;
   };
