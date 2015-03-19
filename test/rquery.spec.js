@@ -1,6 +1,6 @@
-describe('#findComponent', function () {
-  var TestUtils = React.addons.TestUtils;
+var TestUtils = React.addons.TestUtils;
 
+describe('#findComponent', function () {
   before(function () {
     this.reactClass = React.createClass({
       render: function () {
@@ -86,8 +86,6 @@ describe('#at', function () {
 });
 
 describe('#text', function () {
-  var TestUtils = React.addons.TestUtils;
-
   before(function () {
     this.reactClass = React.createClass({
       render: function () {
@@ -104,13 +102,58 @@ describe('#text', function () {
 
   context('when called on multiple components', function() {
     it('returns the inner text of the selected components', function() {
-      expect(this.$r.find('p').text()).to.eq('Text');
+      expect(this.$r.text()).to.eq('Text');
     });
   });
 
   context('when called on single component', function() {
     it('returns the inner text of the selected component', function() {
       expect(this.$r.text()).to.eq('Text');
+    });
+  });
+});
+
+describe('#val', function () {
+  before(function () {
+    this.spy = sinon.spy($R.rquery.prototype, 'change');
+  });
+
+  after(function () {
+    this.spy.reset();
+  });
+
+  describe('when called on an input', function () {
+    before(function () {
+      this.component = TestUtils.renderIntoDocument(React.createElement('input', { defaultValue: 'hello' }));
+      this.$r = $R(this.component);
+    });
+
+    it('returns the current value when no value passed in', function () {
+      expect(this.$r.val()).to.equal('hello');
+      expect(this.spy).to.not.have.beenCalled;
+    });
+
+    it('changes the value of the input', function () {
+      this.$r.val('world');
+      expect(this.$r.val()).to.equal('world');
+      expect(this.spy).to.have.beenCalled;
+    });
+  });
+
+  describe('when called on a non-input', function () {
+    before(function () {
+      this.component = TestUtils.renderIntoDocument(React.createElement('div', { value: 'hello' }));
+      this.$r = $R(this.component);
+    });
+
+    it('returns undefined', function () {
+      expect(this.$r.val()).to.be.undefined;
+      expect(this.spy).to.not.have.beenCalled;
+    });
+
+    it('does not change the value', function () {
+      this.$r.val('world');
+      expect(this.spy).to.not.have.beenCalled;
     });
   });
 });

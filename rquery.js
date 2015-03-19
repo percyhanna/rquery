@@ -54,10 +54,11 @@
       runStep: function (context, match) {
         var newScope = _(context.currentScope)
             .map(function (component) {
-              component = component._renderedComponent || component;
+              var depth = component._reactInternalInstance._rootNodeID.split('.').length;
 
               return TestUtils.findAllInRenderedTree(component, function (descendent) {
-                return descendent._mountDepth === component._mountDepth + 1;
+                var descendentDepth = descendent._reactInternalInstance._rootNodeID.split('.').length;
+                return depth + 1 === descendentDepth;
               });
             })
             .compact()
@@ -90,7 +91,10 @@
       runStep: function (context, match) {
         context.filterScope(function (component) {
           if (TestUtils.isCompositeComponent(component)) {
-            return component._currentElement.type.displayName === match[1];
+            return component._reactInternalInstance
+                && component._reactInternalInstance._currentElement
+                && component._reactInternalInstance._currentElement.type
+                && component._reactInternalInstance._currentElement.type.displayName === match[1];
           }
 
           return false;
@@ -102,7 +106,7 @@
       runStep: function (context, match) {
         context.filterScope(function (component) {
           if (TestUtils.isDOMComponent(component)) {
-            return component._tag === match[1];
+            return component.getDOMNode().tagName === match[1].toUpperCase();
           }
 
           return false;
@@ -110,7 +114,7 @@
       }
     },
     {
-      matcher: /^\.([^\s]+)/,
+      matcher: /^\.([^\s:]+)/,
       runStep: function (context, match) {
         context.filterScope(function (component) {
           if (TestUtils.isDOMComponent(component)
@@ -161,6 +165,14 @@
           }
 
           return hasProp;
+        });
+      }
+    },
+    {
+      matcher: /^:contains\(((?:\\\)|.)*)\)/,
+      runStep: function (context, match) {
+        context.filterScope(function (component) {
+          return $R(component).text().indexOf(match[1]) !== -1;
         });
       }
     }
@@ -285,12 +297,34 @@
     for (var i = 0; i < this.components.length; i++) {
       TestUtils.Simulate[eventName](this.components[i].getDOMNode(), eventData);
     }
+
+    return this;
   };
 
   rquery.prototype.text = function () {
     return _.map(this.components, function(component) {
       return component.getDOMNode().innerText || component.getDOMNode().textContent;
     }).join('');
+  };
+
+  rquery.prototype.val = function (value) {
+    if (value !== undefined) {
+      _.each(this.components, function(component) {
+        var node = component.getDOMNode();
+
+        if ('value' in node) {
+          node.value = value;
+          $R(component).change();
+        }
+      });
+
+      return this;
+    } else {
+      if (this.components[0]) {
+        return this.components[0].getDOMNode().value;
+      }
+    }
+
   };
 
   var EVENT_NAMES = [
@@ -315,7 +349,16 @@
 
   EVENT_NAMES.forEach(function (eventName) {
     rquery.prototype[eventName] = function (eventData) {
-      this.simulateEvent(eventName, eventData);
+      return this.simulateEvent(eventName, eventData);
+    };
+
+    var name = 'ensure' + eventName[0].toUpperCase() + eventName.substr(1);
+    rquery.prototype[name] = function (eventData) {
+      if (this.length !== 1) {
+        throw new Error('Called ' + name + ', but current context has ' + this.length + ' components. ' + name + ' only works when 1 component is present.');
+      }
+
+      return this.simulateEvent(eventName, eventData);
     };
   });
 
@@ -329,6 +372,7 @@
     return $r;
   };
 
+  $R.rquery = rquery;
   $R.isRQuery = function (obj) {
     return obj instanceof rquery;
   };
