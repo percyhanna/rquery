@@ -334,4 +334,26 @@ describe('Selectors', function () {
       expect(this.$r[0].props).to.contain.key('data-something');
     });
   });
+
+  describe(':contains() selector', function () {
+    describe('when not scoped to a specific element', function () {
+      before(function () {
+        this.$r = run(':contains(descendent)');
+      });
+
+      it('finds all components that contain the text', function () {
+        expect(this.$r).to.have.length(5);
+      });
+    });
+
+    describe('when scoped to a specific element', function () {
+      before(function () {
+        this.$r = run('div :contains(descendent)');
+      });
+
+      it('finds all scoped components that contain the text', function () {
+        expect(this.$r).to.have.length(3);
+      });
+    });
+  });
 });

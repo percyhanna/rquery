@@ -167,6 +167,14 @@
           return hasProp;
         });
       }
+    },
+    {
+      matcher: /^:contains\(((?:\\\)|.)*)\)/,
+      runStep: function (context, match) {
+        context.filterScope(function (component) {
+          return $R(component).text().indexOf(match[1]) !== -1;
+        });
+      }
     }
   ];
 
