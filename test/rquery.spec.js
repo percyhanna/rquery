@@ -104,7 +104,7 @@ describe('#text', function () {
 
   context('when called on multiple components', function() {
     it('returns the inner text of the selected components', function() {
-      expect(this.$r.find('p').text()).to.eq('Text');
+      expect(this.$r.text()).to.eq('Text');
     });
   });
 

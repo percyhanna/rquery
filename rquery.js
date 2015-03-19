@@ -54,10 +54,11 @@
       runStep: function (context, match) {
         var newScope = _(context.currentScope)
             .map(function (component) {
-              component = component._renderedComponent || component;
+              var depth = component._reactInternalInstance._rootNodeID.split('.').length;
 
               return TestUtils.findAllInRenderedTree(component, function (descendent) {
-                return descendent._mountDepth === component._mountDepth + 1;
+                var descendentDepth = descendent._reactInternalInstance._rootNodeID.split('.').length;
+                return depth + 1 === descendentDepth;
               });
             })
             .compact()
@@ -90,7 +91,10 @@
       runStep: function (context, match) {
         context.filterScope(function (component) {
           if (TestUtils.isCompositeComponent(component)) {
-            return component._currentElement.type.displayName === match[1];
+            return component._reactInternalInstance
+                && component._reactInternalInstance._currentElement
+                && component._reactInternalInstance._currentElement.type
+                && component._reactInternalInstance._currentElement.type.displayName === match[1];
           }
 
           return false;
@@ -102,7 +106,7 @@
       runStep: function (context, match) {
         context.filterScope(function (component) {
           if (TestUtils.isDOMComponent(component)) {
-            return component._tag === match[1];
+            return component.getDOMNode().tagName === match[1].toUpperCase();
           }
 
           return false;
