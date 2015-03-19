@@ -289,6 +289,8 @@
     for (var i = 0; i < this.components.length; i++) {
       TestUtils.Simulate[eventName](this.components[i].getDOMNode(), eventData);
     }
+
+    return this;
   };
 
   rquery.prototype.text = function () {
@@ -319,7 +321,7 @@
 
   EVENT_NAMES.forEach(function (eventName) {
     rquery.prototype[eventName] = function (eventData) {
-      this.simulateEvent(eventName, eventData);
+      return this.simulateEvent(eventName, eventData);
     };
   });
 
