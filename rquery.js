@@ -301,6 +301,27 @@
     return this;
   };
 
+  rquery.prototype.ensureSimulateEvent = function (eventName, eventData) {
+    if (this.length !== 1) {
+      var name = 'ensure' + eventName[0].toUpperCase() + eventName.substr(1);
+      throw new Error('Called ' + name + ', but current context has ' + this.length + ' components. ' + name + ' only works when 1 component is present.');
+    }
+
+    return this.simulateEvent(eventName, eventData);
+  }
+
+  rquery.prototype.clickAndChange = function (clickData, changeData) {
+    this.click(clickData);
+    this.change(changeData);
+    return this;
+  };
+
+  rquery.prototype.ensureClickAndChange = function (clickData, changeData) {
+    this.ensureSimulateEvent('click', clickData);
+    this.ensureSimulateEvent('change', changeData);
+    return this;
+  };
+
   rquery.prototype.text = function () {
     return _.map(this.components, function(component) {
       return component.getDOMNode().innerText || component.getDOMNode().textContent;
@@ -354,11 +375,7 @@
 
     var name = 'ensure' + eventName[0].toUpperCase() + eventName.substr(1);
     rquery.prototype[name] = function (eventData) {
-      if (this.length !== 1) {
-        throw new Error('Called ' + name + ', but current context has ' + this.length + ' components. ' + name + ' only works when 1 component is present.');
-      }
-
-      return this.simulateEvent(eventName, eventData);
+      return this.ensureSimulateEvent(eventName, eventData);
     };
   });
 
