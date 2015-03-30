@@ -23,8 +23,8 @@ dispatching.
 
 ```javascript
 var _ = require('lodash');
-var React = require('react/addons);
-var $R = require('rquery)(_, React);
+var React = require('react/addons');
+var $R = require('rquery')(_, React);
 ```
 
 ### Browser with Scripttags
