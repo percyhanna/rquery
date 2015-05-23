@@ -32,6 +32,8 @@
     "chai": "1",
     "chai-react": "^2.0.0",
     "es5-shim": "^4.0.0",
+    "karma": "^0.12.32",
+    "karma-mocha": "^0.1.10",
     "mocha": "1",
     "mocha-phantomjs": "3",
     "react": "^0.13.0",
