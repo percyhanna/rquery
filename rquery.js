@@ -394,5 +394,7 @@
     return obj instanceof rquery;
   };
 
+  $R.React = React;
+
   return $R;
 }));
