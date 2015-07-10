@@ -328,6 +328,12 @@
     }).join('');
   };
 
+  rquery.prototype.html = function () {
+    return _.map(this.components, function(component) {
+      return component.getDOMNode().innerHTML || '';
+    }).join('');
+  };
+
   rquery.prototype.val = function (value) {
     if (value !== undefined) {
       _.each(this.components, function(component) {

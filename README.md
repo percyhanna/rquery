@@ -101,6 +101,15 @@ $r.text()
 Returns the text contents of the component(s) in the `$r` object. Similar to
 jQuery's `text()` method (read-only).
 
+#### `html`
+
+```javascript
+$r.html()
+```
+
+Returns the HTML contents of the component(s) in the `$r` object. Similar to
+jQuery's `html()` method (read-only).
+
 #### `simulateEvent`
 
 ```javascript

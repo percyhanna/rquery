@@ -113,6 +113,36 @@ describe('#text', function () {
   });
 });
 
+describe('#html', function () {
+  before(function () {
+    this.reactClass = React.createClass({
+      render: function () {
+        var p1 = React.createElement('p', null, 'Te'),
+            p2 = React.createElement('p', null, [
+              React.createElement('strong', null, 'xt')
+            ]);
+
+        return React.createElement('div', null, p1, p2);
+      }
+    });
+
+    this.component = TestUtils.renderIntoDocument(React.createElement(this.reactClass));
+    this.$r = $R(this.component).findComponent(this.reactClass);
+  });
+
+  context('when called on multiple components', function() {
+    it('returns the inner text of the selected components', function() {
+      expect(this.$r.html()).to.match(new RegExp('<p data-reactid="[^"]+">Te</p><p data-reactid="[^"]+"><strong data-reactid="[^"]+">xt</strong></p>'));
+    });
+  });
+
+  context('when called on single component', function() {
+    it('returns the inner text of the selected component', function() {
+      expect(this.$r.find('p').at(1).html()).to.match(new RegExp('<strong data-reactid="[^"]+">xt</strong>'));
+    });
+  });
+});
+
 describe('#val', function () {
   before(function () {
     this.spy = sinon.spy($R.rquery.prototype, 'change');
