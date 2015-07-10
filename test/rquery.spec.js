@@ -108,7 +108,7 @@ describe('#text', function () {
 
   context('when called on single component', function() {
     it('returns the inner text of the selected component', function() {
-      expect(this.$r.text()).to.eq('Text');
+      expect(this.$r.find('p').at(0).text()).to.eq('Te');
     });
   });
 });
