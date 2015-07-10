@@ -351,7 +351,6 @@
         return this.components[0].getDOMNode().value;
       }
     }
-
   };
 
   var EVENT_NAMES = [
@@ -398,6 +397,10 @@
   $R.rquery = rquery;
   $R.isRQuery = function (obj) {
     return obj instanceof rquery;
+  };
+
+  $R.mixin = function (obj) {
+    _.defaults(rquery.prototype, obj);
   };
 
   return $R;

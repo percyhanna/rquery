@@ -67,7 +67,32 @@ The `$R` factory method returns a new instance of an `rquery` object.
 var $r = $R(component);
 ```
 
-## `rquery` object
+### Class Methods
+
+#### `.mixin`
+
+```javascript
+$R.mixin({
+  customMethod: function () {
+    // your own custom method
+  }
+});
+```
+
+The `mixin` method allows you to add extra methods to the `rquery` prototype. It
+does not allow you to override internal methods, though.
+
+#### `.isRQuery`
+
+```javascript
+$R.isRQuery('abc'); // false
+$R.isRQuery($R([])); // true
+```
+
+Returns `true` if the provided argument is an instance of the `rquery`
+prototype.
+
+### *Instance Methods*
 
 An instance of the `rquery` class contains an array of components, and provides
 an `Array`-like interface to directly access each component.
@@ -81,9 +106,7 @@ $r[0] === component1; // true
 $r[1] === component2; // true
 ```
 
-### *Instance Methods*
-
-#### `find`
+#### `#find`
 
 ```javascript
 $r.find(selector)
@@ -92,7 +115,7 @@ $r.find(selector)
 Returns a new `rquery` instance with the components that match the provided
 selector (see [Selector](#selectors) documentation).
 
-#### `text`
+#### `#text`
 
 ```javascript
 $r.text()
@@ -101,7 +124,7 @@ $r.text()
 Returns the text contents of the component(s) in the `$r` object. Similar to
 jQuery's `text()` method (read-only).
 
-#### `html`
+#### `#html`
 
 ```javascript
 $r.html()
@@ -110,7 +133,7 @@ $r.html()
 Returns the HTML contents of the component(s) in the `$r` object. Similar to
 jQuery's `html()` method (read-only).
 
-#### `simulateEvent`
+#### `#simulateEvent`
 
 ```javascript
 simulateEvent(eventName, eventData)

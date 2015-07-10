@@ -187,3 +187,39 @@ describe('#val', function () {
     });
   });
 });
+
+describe('.isRQuery', function () {
+  it('it returns false for non rquery objects', function() {
+    expect($R.isRQuery('abc')).to.be.false;
+    expect($R.isRQuery(123)).to.be.false;
+    expect($R.isRQuery([])).to.be.false;
+    expect($R.isRQuery({})).to.be.false;
+  });
+
+  it('it returns true for rquery objects', function() {
+    expect($R.isRQuery($R([]))).to.be.true;
+    expect($R.isRQuery($R([]).at(0))).to.be.true;
+  });
+});
+
+describe('.mixin', function () {
+  before(function () {
+    this._builtInFind = $R([]).find;
+
+    $R.mixin({
+      find: function () {}, // should not allow overriding a built-in method
+      customMethod: function () {
+        return 123;
+      }
+    });
+    this.$r = $R([]);
+  });
+
+  it('does not allow overriding built-in methods', function() {
+    expect(this._builtInFind).to.eq(this.$r.find);
+  });
+
+  it('it allows execution of custom methods', function() {
+    expect(this.$r.customMethod()).to.eq(123);
+  });
+});
