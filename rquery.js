@@ -328,6 +328,12 @@
     }).join('');
   };
 
+  rquery.prototype.html = function () {
+    return _.map(this.components, function(component) {
+      return component.getDOMNode().innerHTML || '';
+    }).join('');
+  };
+
   rquery.prototype.val = function (value) {
     if (value !== undefined) {
       _.each(this.components, function(component) {
@@ -345,7 +351,6 @@
         return this.components[0].getDOMNode().value;
       }
     }
-
   };
 
   var EVENT_NAMES = [
@@ -392,6 +397,10 @@
   $R.rquery = rquery;
   $R.isRQuery = function (obj) {
     return obj instanceof rquery;
+  };
+
+  $R.extend = function (obj) {
+    _.defaults(rquery.prototype, obj);
   };
 
   return $R;

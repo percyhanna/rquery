@@ -108,7 +108,37 @@ describe('#text', function () {
 
   context('when called on single component', function() {
     it('returns the inner text of the selected component', function() {
-      expect(this.$r.text()).to.eq('Text');
+      expect(this.$r.find('p').at(0).text()).to.eq('Te');
+    });
+  });
+});
+
+describe('#html', function () {
+  before(function () {
+    this.reactClass = React.createClass({
+      render: function () {
+        var p1 = React.createElement('p', null, 'Te'),
+            p2 = React.createElement('p', null, [
+              React.createElement('strong', null, 'xt')
+            ]);
+
+        return React.createElement('div', null, p1, p2);
+      }
+    });
+
+    this.component = TestUtils.renderIntoDocument(React.createElement(this.reactClass));
+    this.$r = $R(this.component).findComponent(this.reactClass);
+  });
+
+  context('when called on multiple components', function() {
+    it('returns the inner text of the selected components', function() {
+      expect(this.$r.html()).to.match(new RegExp('<p data-reactid="[^"]+">Te</p><p data-reactid="[^"]+"><strong data-reactid="[^"]+">xt</strong></p>'));
+    });
+  });
+
+  context('when called on single component', function() {
+    it('returns the inner text of the selected component', function() {
+      expect(this.$r.find('p').at(1).html()).to.match(new RegExp('<strong data-reactid="[^"]+">xt</strong>'));
     });
   });
 });
@@ -155,5 +185,41 @@ describe('#val', function () {
       this.$r.val('world');
       expect(this.spy).to.not.have.beenCalled;
     });
+  });
+});
+
+describe('.isRQuery', function () {
+  it('it returns false for non rquery objects', function() {
+    expect($R.isRQuery('abc')).to.be.false;
+    expect($R.isRQuery(123)).to.be.false;
+    expect($R.isRQuery([])).to.be.false;
+    expect($R.isRQuery({})).to.be.false;
+  });
+
+  it('it returns true for rquery objects', function() {
+    expect($R.isRQuery($R([]))).to.be.true;
+    expect($R.isRQuery($R([]).at(0))).to.be.true;
+  });
+});
+
+describe('.extend', function () {
+  before(function () {
+    this._builtInFind = $R([]).find;
+
+    $R.extend({
+      find: function () {}, // should not allow overriding a built-in method
+      customMethod: function () {
+        return 123;
+      }
+    });
+    this.$r = $R([]);
+  });
+
+  it('does not allow overriding built-in methods', function() {
+    expect(this._builtInFind).to.eq(this.$r.find);
+  });
+
+  it('it allows execution of custom methods', function() {
+    expect(this.$r.customMethod()).to.eq(123);
   });
 });
