@@ -69,17 +69,17 @@ var $r = $R(component);
 
 ### Class Methods
 
-#### `.mixin`
+#### `.extend`
 
 ```javascript
-$R.mixin({
+$R.extend({
   customMethod: function () {
     // your own custom method
   }
 });
 ```
 
-The `mixin` method allows you to add extra methods to the `rquery` prototype. It
+The `extend` method allows you to add extra methods to the `rquery` prototype. It
 does not allow you to override internal methods, though.
 
 #### `.isRQuery`

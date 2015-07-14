@@ -399,7 +399,7 @@
     return obj instanceof rquery;
   };
 
-  $R.mixin = function (obj) {
+  $R.extend = function (obj) {
     _.defaults(rquery.prototype, obj);
   };
 

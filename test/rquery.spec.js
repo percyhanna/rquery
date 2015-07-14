@@ -202,11 +202,11 @@ describe('.isRQuery', function () {
   });
 });
 
-describe('.mixin', function () {
+describe('.extend', function () {
   before(function () {
     this._builtInFind = $R([]).find;
 
-    $R.mixin({
+    $R.extend({
       find: function () {}, // should not allow overriding a built-in method
       customMethod: function () {
         return 123;
