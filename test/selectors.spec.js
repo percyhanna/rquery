@@ -186,8 +186,22 @@ describe('Selectors', function () {
       expect(this.$r).to.have.length(1);
     });
 
-    it('first component is instance of "a" tag', function () {
+    it('first component is instance of "div" tag', function () {
       expect(this.$r[0]).to.be.componentWithTag('div');
+    });
+  });
+
+  describe('chained DOM class selector', function () {
+    before(function () {
+      this.$r = run('.my-class.some-other-class');
+    });
+
+    it('find one component', function () {
+      expect(this.$r).to.have.length(1);
+    });
+
+    it('has the correct class names', function () {
+      expect(this.$r[0]).to.have.prop('className', 'my-class some-other-class');
     });
   });
 
