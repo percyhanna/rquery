@@ -353,6 +353,25 @@
     }
   };
 
+  rquery.prototype.checked = function (value) {
+    if (value !== undefined) {
+      _.each(this.components, function (component) {
+        var node = component.getDOMNode();
+
+        if ('checked' in node) {
+          node.checked = value;
+          $R(component).change();
+        }
+      });
+
+      return this;
+    } else {
+      if (this.components[0]) {
+        return this.components[0].getDOMNode().checked;
+      }
+    }
+  };
+
   var EVENT_NAMES = [
     // clipboard events
     'copy', 'cut', 'paste',
