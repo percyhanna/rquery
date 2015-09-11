@@ -188,7 +188,7 @@ describe('#val', function () {
   });
 });
 
-describe('#check', function () {
+describe('#checked', function () {
   before(function () {
     this.spy = sinon.spy($R.rquery.prototype, 'change');
   });
@@ -204,13 +204,13 @@ describe('#check', function () {
     });
 
     it('returns the current checked property value when no checked value passed in', function () {
-      expect(this.$r.check()).to.equal(true);
+      expect(this.$r.checked()).to.equal(true);
       expect(this.spy).to.not.have.beenCalled;
     });
 
     it('changes the checked property value of the input', function () {
-      this.$r.check(false);
-      expect(this.$r.check()).to.equal(false);
+      this.$r.checked(false);
+      expect(this.$r.checked()).to.equal(false);
       expect(this.spy).to.have.beenCalled;
     });
   });
@@ -222,12 +222,12 @@ describe('#check', function () {
     });
 
     it('returns undefined when no value passed in', function () {
-      expect(this.$r.check()).to.be.undefined;
+      expect(this.$r.checked()).to.be.undefined;
       expect(this.spy).to.not.have.beenCalled;
     });
 
     it('no changes when a value is passed in', function () {
-      this.$r.check(true);
+      this.$r.checked(true);
       expect(this.spy).to.not.have.beenCalled;
     });
   });

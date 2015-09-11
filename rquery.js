@@ -353,13 +353,13 @@
     }
   };
 
-  rquery.prototype.check = function (checked) {
-    if (checked !== undefined) {
+  rquery.prototype.checked = function (value) {
+    if (value !== undefined) {
       _.each(this.components, function (component) {
         var node = component.getDOMNode();
 
         if ('checked' in node) {
-          node.checked = checked;
+          node.checked = value;
           $R(component).change();
         }
       });
