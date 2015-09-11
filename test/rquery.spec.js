@@ -149,7 +149,7 @@ describe('#val', function () {
   });
 
   after(function () {
-    this.spy.reset();
+    this.spy.restore();
   });
 
   describe('when called on an input', function () {
@@ -183,6 +183,51 @@ describe('#val', function () {
 
     it('does not change the value', function () {
       this.$r.val('world');
+      expect(this.spy).to.not.have.beenCalled;
+    });
+  });
+});
+
+describe('#check', function () {
+  before(function () {
+    this.spy = sinon.spy($R.rquery.prototype, 'change');
+  });
+
+  after(function () {
+    this.spy.restore();
+  });
+
+  describe('when called on an input', function () {
+    before(function () {
+      this.component = TestUtils.renderIntoDocument(React.createElement('input', { defaultChecked: true }));
+      this.$r = $R(this.component);
+    });
+
+    it('returns the current checked property value when no checked value passed in', function () {
+      expect(this.$r.check()).to.equal(true);
+      expect(this.spy).to.not.have.beenCalled;
+    });
+
+    it('changes the checked property value of the input', function () {
+      this.$r.check(false);
+      expect(this.$r.check()).to.equal(false);
+      expect(this.spy).to.have.beenCalled;
+    });
+  });
+
+  describe('when called on a non-input', function () {
+    before(function () {
+      this.component = TestUtils.renderIntoDocument(React.createElement('div'));
+      this.$r = $R(this.component);
+    });
+
+    it('returns undefined when no value passed in', function () {
+      expect(this.$r.check()).to.be.undefined;
+      expect(this.spy).to.not.have.beenCalled;
+    });
+
+    it('no changes when a value is passed in', function () {
+      this.$r.check(true);
       expect(this.spy).to.not.have.beenCalled;
     });
   });
