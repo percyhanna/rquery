@@ -322,15 +322,21 @@
     return this;
   };
 
-  rquery.prototype.text = function () {
+  rquery.prototype.nodes = function () {
     return _.map(this.components, function(component) {
-      return component.getDOMNode().innerText || component.getDOMNode().textContent;
+      return component.getDOMNode();
+    });
+  };
+
+  rquery.prototype.text = function () {
+    return _.map(this.nodes(), function(node) {
+      return node.innerText || node.textContent;
     }).join('');
   };
 
   rquery.prototype.html = function () {
-    return _.map(this.components, function(component) {
-      return component.getDOMNode().innerHTML || '';
+    return _.map(this.nodes(), function(node) {
+      return node.innerHTML || '';
     }).join('');
   };
 

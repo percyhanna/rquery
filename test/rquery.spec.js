@@ -85,6 +85,41 @@ describe('#at', function () {
   });
 });
 
+describe('#nodes', function () {
+  before(function () {
+    this.reactClass = React.createClass({
+      render: function () {
+        var p1 = React.createElement('p', null, 'Te'),
+            p2 = React.createElement('p', null, 'xt');
+
+        return React.createElement('div', null, p1, p2);
+      }
+    });
+
+    this.component = TestUtils.renderIntoDocument(React.createElement(this.reactClass));
+    this.$r = $R(this.component);
+  });
+
+  context('when called on a single component', function() {
+    it('returns the top-level node', function() {
+      var nodes = this.$r.nodes();
+
+      expect(nodes).to.have.length(1);
+      expect(nodes[0].tagName.toUpperCase()).to.eq('DIV');
+    });
+  });
+
+  context('when called on multiple components', function() {
+    it('returns each node', function() {
+      var nodes = this.$r.find('p').nodes();
+
+      expect(nodes).to.have.length(2);
+      expect(nodes[0].tagName.toUpperCase()).to.eq('P');
+      expect(nodes[1].tagName.toUpperCase()).to.eq('P');
+    });
+  });
+});
+
 describe('#text', function () {
   before(function () {
     this.reactClass = React.createClass({
