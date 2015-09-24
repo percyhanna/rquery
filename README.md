@@ -115,6 +115,32 @@ $r.find(selector)
 Returns a new `rquery` instance with the components that match the provided
 selector (see [Selector](#selectors) documentation).
 
+#### `#prop`
+
+```javascript
+$r.prop('a')
+```
+
+Returns the value for the given prop for the first component in the scope. It
+throws an error if the scope has no components.
+
+#### `#state`
+
+```javascript
+$r.state('a')
+```
+
+Returns the value for the given state for the first component in the scope. It
+throws an error if the scope has no components.
+
+#### `#nodes`
+
+```javascript
+$r.nodes()
+```
+
+Returns an array of each DOM node in the current scope.
+
 #### `#text`
 
 ```javascript

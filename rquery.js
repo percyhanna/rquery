@@ -322,15 +322,37 @@
     return this;
   };
 
-  rquery.prototype.text = function () {
+  rquery.prototype.prop = function (name) {
+    if (this.length < 1) {
+      throw new Error('$R#prop requires at least one component. No components in current scope.');
+    }
+
+    return this[0].props[name];
+  };
+
+  rquery.prototype.state = function (name) {
+    if (this.length < 1) {
+      throw new Error('$R#state requires at least one component. No components in current scope.');
+    }
+
+    return (this[0].state || {})[name];
+  };
+
+  rquery.prototype.nodes = function () {
     return _.map(this.components, function(component) {
-      return component.getDOMNode().innerText || component.getDOMNode().textContent;
+      return component.getDOMNode();
+    });
+  };
+
+  rquery.prototype.text = function () {
+    return _.map(this.nodes(), function(node) {
+      return node.innerText || node.textContent;
     }).join('');
   };
 
   rquery.prototype.html = function () {
-    return _.map(this.components, function(component) {
-      return component.getDOMNode().innerHTML || '';
+    return _.map(this.nodes(), function(node) {
+      return node.innerHTML || '';
     }).join('');
   };
 

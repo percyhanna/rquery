@@ -85,6 +85,88 @@ describe('#at', function () {
   });
 });
 
+describe('#prop', function () {
+  before(function () {
+    this.component = TestUtils.renderIntoDocument(React.createElement('div', { a: 123 }));
+    this.$r = $R(this.component);
+  });
+
+  it('returns the prop value when defined', function() {
+    expect(this.$r.prop('a')).to.eq(123);
+  });
+
+  it('returns undefined when no prop is defined', function() {
+    expect(this.$r.prop('abc')).to.be.undefined;
+  });
+
+  it('throws an error when no component is in the scope', function() {
+    var $r = this.$r;
+    expect(function () {
+      $r.find('p').prop('a');
+    }).to.throw('$R#prop requires at least one component. No components in current scope.');
+  });
+});
+
+describe('#state', function () {
+  before(function () {
+    this.component = TestUtils.renderIntoDocument(React.createElement('div'));
+    this.component.setState({
+      a: 123
+    });
+    this.$r = $R(this.component);
+  });
+
+  it('returns the state value when defined', function() {
+    expect(this.$r.state('a')).to.eq(123);
+  });
+
+  it('returns undefined when no state is defined', function() {
+    expect(this.$r.state('abc')).to.be.undefined;
+  });
+
+  it('throws an error when no component is in the scope', function() {
+    var $r = this.$r;
+    expect(function () {
+      $r.find('p').state('a');
+    }).to.throw('$R#state requires at least one component. No components in current scope.');
+  });
+});
+
+describe('#nodes', function () {
+  before(function () {
+    this.reactClass = React.createClass({
+      render: function () {
+        var p1 = React.createElement('p', null, 'Te'),
+            p2 = React.createElement('p', null, 'xt');
+
+        return React.createElement('div', null, p1, p2);
+      }
+    });
+
+    this.component = TestUtils.renderIntoDocument(React.createElement(this.reactClass));
+    this.$r = $R(this.component);
+  });
+
+  context('when called on a single component', function() {
+    it('returns the top-level node', function() {
+      var nodes = this.$r.nodes();
+
+      expect(nodes).to.have.length(1);
+      expect(nodes[0].tagName.toUpperCase()).to.eq('DIV');
+    });
+  });
+
+  context('when called on multiple components', function() {
+    it('returns each node', function() {
+      var nodes = this.$r.find('p').nodes();
+
+      expect(nodes).to.have.length(2);
+      expect(nodes[0].tagName.toUpperCase()).to.eq('P');
+      expect(nodes[1].tagName.toUpperCase()).to.eq('P');
+    });
+  });
+});
+
 describe('#text', function () {
   before(function () {
     this.reactClass = React.createClass({
