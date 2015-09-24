@@ -85,6 +85,53 @@ describe('#at', function () {
   });
 });
 
+describe('#prop', function () {
+  before(function () {
+    this.component = TestUtils.renderIntoDocument(React.createElement('div', { a: 123 }));
+    this.$r = $R(this.component);
+  });
+
+  it('returns the prop value when defined', function() {
+    expect(this.$r.prop('a')).to.eq(123);
+  });
+
+  it('returns undefined when no prop is defined', function() {
+    expect(this.$r.prop('abc')).to.be.undefined;
+  });
+
+  it('throws an error when no component is in the scope', function() {
+    var $r = this.$r;
+    expect(function () {
+      $r.find('p').prop('a');
+    }).to.throw('$R#prop requires at least one component. No components in current scope.');
+  });
+});
+
+describe('#state', function () {
+  before(function () {
+    this.component = TestUtils.renderIntoDocument(React.createElement('div'));
+    this.component.setState({
+      a: 123
+    });
+    this.$r = $R(this.component);
+  });
+
+  it('returns the state value when defined', function() {
+    expect(this.$r.state('a')).to.eq(123);
+  });
+
+  it('returns undefined when no state is defined', function() {
+    expect(this.$r.state('abc')).to.be.undefined;
+  });
+
+  it('throws an error when no component is in the scope', function() {
+    var $r = this.$r;
+    expect(function () {
+      $r.find('p').state('a');
+    }).to.throw('$R#state requires at least one component. No components in current scope.');
+  });
+});
+
 describe('#nodes', function () {
   before(function () {
     this.reactClass = React.createClass({

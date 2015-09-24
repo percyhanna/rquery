@@ -322,6 +322,22 @@
     return this;
   };
 
+  rquery.prototype.prop = function (name) {
+    if (this.length < 1) {
+      throw new Error('$R#prop requires at least one component. No components in current scope.');
+    }
+
+    return this[0].props[name];
+  };
+
+  rquery.prototype.state = function (name) {
+    if (this.length < 1) {
+      throw new Error('$R#state requires at least one component. No components in current scope.');
+    }
+
+    return (this[0].state || {})[name];
+  };
+
   rquery.prototype.nodes = function () {
     return _.map(this.components, function(component) {
       return component.getDOMNode();
