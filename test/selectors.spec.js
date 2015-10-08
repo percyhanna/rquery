@@ -223,6 +223,17 @@ describe('Selectors', function () {
     });
   });
 
+  describe('chained attribute selectors', function () {
+    before(function () {
+      this.$r = run('div[id="my-component"][class~="my-class"]');
+    });
+
+    it('finds the correct component', function () {
+      expect(this.$r).to.have.length(1);
+      expect(this.$r[0]).to.have.prop('id', 'my-component');
+    });
+  });
+
   describe('attribute selector with dash in name', function () {
     before(function () {
       this.$r = run('[data-something]');

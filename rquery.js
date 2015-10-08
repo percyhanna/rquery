@@ -128,7 +128,7 @@
       }
     },
     {
-      matcher: /^\[([^\s~|^$*=]+)(?:([~|^$*]?=)"((?:\\"|.)*)")?\]/,
+      matcher: /^\[([^\s~|^$*=]+)(?:([~|^$*]?=)"((?:\\"|.)*?)")?\]/,
       runStep: function (context, match) {
         context.filterScope(function (component) {
           var propName = match[1] === 'class' ? 'className' : match[1],
