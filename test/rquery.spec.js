@@ -23,33 +23,35 @@ describe('#findComponent', function () {
 
 describe('#get', function () {
   before(function () {
-    this.$r = $R(['p']);
+    this.$r = $R('p');
   });
 
   describe('when accessing a valid index', function () {
-    before(function () {
-      this.value = this.$r.get(0);
-    });
-
     it('returns the component directly', function () {
-      expect(this.value).to.equal('p');
+      expect(this.$r.get(0)).to.equal('p');
     });
   });
 
   describe('when accessing an invalid index', function () {
-    before(function () {
-      this.value = this.$r.get(1);
-    });
-
     it('returns undefined', function () {
-      expect(this.value).to.be.undefined();
+      expect(this.$r.get(1)).to.be.undefined();
     });
   });
 });
 
 describe('#at', function () {
   before(function () {
-    this.$r = $R(['p', 'a']);
+    this.reactClass = React.createClass({
+      render: function () {
+        return React.createElement('div', {},
+          React.createElement('p'),
+          React.createElement('p')
+        );
+      }
+    });
+
+    this.component = TestUtils.renderIntoDocument(React.createElement(this.reactClass));
+    this.$r = $R(this.component, 'p');
   });
 
   describe('when accessing a valid index', function () {
@@ -66,7 +68,7 @@ describe('#at', function () {
     });
 
     it('returns the item requested', function () {
-      expect(this.value[0]).to.equal('p');
+      expect(this.value[0]).to.be.instanceOf(Element);
     });
   });
 
@@ -87,12 +89,12 @@ describe('#at', function () {
 
 describe('#prop', function () {
   before(function () {
-    this.component = TestUtils.renderIntoDocument(React.createElement('div', { a: 123 }));
+    this.component = TestUtils.renderIntoDocument(React.createElement('div', { 'data-something': 123 }));
     this.$r = $R(this.component);
   });
 
   it('returns the prop value when defined', function() {
-    expect(this.$r.prop('a')).to.eq(123);
+    expect(this.$r.prop('data-something')).to.eq('123');
   });
 
   it('returns undefined when no prop is defined', function() {
@@ -109,7 +111,13 @@ describe('#prop', function () {
 
 describe('#state', function () {
   before(function () {
-    this.component = TestUtils.renderIntoDocument(React.createElement('div'));
+    this.reactClass = React.createClass({
+      render: function () {
+        return React.createElement('div');
+      }
+    });
+
+    this.component = TestUtils.renderIntoDocument(React.createElement(this.reactClass));
     this.component.setState({
       a: 123
     });
@@ -201,7 +209,7 @@ describe('#html', function () {
       render: function () {
         var p1 = React.createElement('p', null, 'Te'),
             p2 = React.createElement('p', null, [
-              React.createElement('strong', null, 'xt')
+              React.createElement('strong', { key: 1 }, 'xt')
             ]);
 
         return React.createElement('div', null, p1, p2);
@@ -319,19 +327,18 @@ describe('.isRQuery', function () {
   it('it returns false for non rquery objects', function() {
     expect($R.isRQuery('abc')).to.be.false;
     expect($R.isRQuery(123)).to.be.false;
-    expect($R.isRQuery([])).to.be.false;
     expect($R.isRQuery({})).to.be.false;
   });
 
   it('it returns true for rquery objects', function() {
-    expect($R.isRQuery($R([]))).to.be.true;
-    expect($R.isRQuery($R([]).at(0))).to.be.true;
+    expect($R.isRQuery($R())).to.be.true;
+    expect($R.isRQuery($R().at(0))).to.be.true;
   });
 });
 
 describe('.extend', function () {
   before(function () {
-    this._builtInFind = $R([]).find;
+    this._builtInFind = $R().find;
 
     $R.extend({
       find: function () {}, // should not allow overriding a built-in method
@@ -339,7 +346,7 @@ describe('.extend', function () {
         return 123;
       }
     });
-    this.$r = $R([]);
+    this.$r = $R();
   });
 
   it('does not allow overriding built-in methods', function() {

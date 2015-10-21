@@ -9,7 +9,7 @@ describe('Selectors', function () {
   };
 
   before(function () {
-    var childComponent = React.createClass({
+    var childComponent = this.childComponent = React.createClass({
       displayName: 'ChildComponent',
 
       render: function () {
@@ -115,8 +115,9 @@ describe('Selectors', function () {
         this.$r = run('div > ChildComponent');
       });
 
-      it('finds the button component', function () {
+      it('finds the child component', function () {
         expect(this.$r).to.have.length(1);
+        expect(this.$r[0]).to.be.instanceOf(this.childComponent);
       });
     });
   });
@@ -219,7 +220,7 @@ describe('Selectors', function () {
     });
 
     it('component has target property', function () {
-      expect(this.$r[0].props).to.contain.key('target');
+      expect(this.$r[0].hasAttribute('target')).to.be.true;
     });
   });
 
@@ -248,7 +249,7 @@ describe('Selectors', function () {
     });
 
     it('component has data-something property', function () {
-      expect(this.$r[0].props).to.contain.key('data-something');
+      expect(this.$r[0].hasAttribute('data-something')).to.be.true;
     });
   });
 
@@ -266,7 +267,7 @@ describe('Selectors', function () {
     });
 
     it('component has target property', function () {
-      expect(this.$r[0].props).to.contain.key('target');
+      expect(this.$r[0].hasAttribute('target')).to.be.true;
     });
   });
 
@@ -284,7 +285,7 @@ describe('Selectors', function () {
     });
 
     it('component has target property', function () {
-      expect(this.$r[0].props).to.contain.key('className');
+      expect(this.$r[0].className).to.equal('my-class some-other-class');
     });
   });
 
@@ -302,7 +303,7 @@ describe('Selectors', function () {
     });
 
     it('component has target property', function () {
-      expect(this.$r[0].props).to.contain.key('className');
+      expect(this.$r[0].className).to.equal('my-class some-other-class');
     });
   });
 
@@ -320,7 +321,7 @@ describe('Selectors', function () {
     });
 
     it('component has target property', function () {
-      expect(this.$r[0].props).to.contain.key('data-something');
+      expect(this.$r[0].hasAttribute('data-something')).to.be.true;
     });
   });
 
@@ -338,7 +339,7 @@ describe('Selectors', function () {
     });
 
     it('component has target property', function () {
-      expect(this.$r[0].props).to.contain.key('data-something');
+      expect(this.$r[0].hasAttribute('data-something')).to.be.true;
     });
   });
 
@@ -356,7 +357,7 @@ describe('Selectors', function () {
     });
 
     it('component has target property', function () {
-      expect(this.$r[0].props).to.contain.key('data-something');
+      expect(this.$r[0].hasAttribute('data-something')).to.be.true;
     });
   });
 

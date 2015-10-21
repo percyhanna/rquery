@@ -5,26 +5,81 @@
     module.exports = rquery;
   } else if (typeof define === "function" && define.amd) {
     // AMD
-    define(['react', 'lodash'], function (React, _) {
-      return rquery(_, React);
+    define(['lodash', 'react', 'react-dom', 'react-addons-test-utils'], function (_, React, ReactDOM, TestUtils) {
+      return rquery(_, React, ReactDOM, TestUtils);
     });
   } else {
     // Other environment (usually <script> tag): assume React is already loaded.
-    window.$R = rquery(window._, React);
+    window.$R = rquery(window._, React, ReactDOM, React.addons.TestUtils);
   }
-}(function (_, React) {
+}(function (_, React, ReactDOM, TestUtils) {
   'use strict';
-
-  var TestUtils = React.addons.TestUtils;
 
   function isArray (arr) {
     return Object.prototype.toString.call(arr) === '[object Array]';
   }
 
+  function descendentsFromNode (node) {
+    return _.chain(node.childNodes).filter(function (node) {
+      return node.nodeType === Node.ELEMENT_NODE;
+    }).map(function (node) {
+      var descendents = descendentsFromNode(node);
+      descendents.unshift(node);
+      return descendents;
+    }).flatten().value();
+  }
+
+  function rquery_findAllInRenderedTree (component, predicate) {
+    var components;
+
+    if (TestUtils.isDOMComponent(component)) {
+      components = descendentsFromNode(component);
+      return _.filter(components, predicate);
+    } else {
+      return TestUtils.findAllInRenderedTree(component, predicate);
+    }
+  }
+
+  function componentDepth (component) {
+    if (TestUtils.isDOMComponent(component)) {
+      return component.getAttribute('data-reactid').split('.').length;
+    } else {
+      return component._reactInternalInstance._rootNodeID.split('.').length;
+    }
+  }
+
+  function rquery_getDOMNode (component) {
+    if (TestUtils.isDOMComponent(component)) {
+      return component;
+    }
+
+    return ReactDOM.findDOMNode(component);
+  }
+
+  function getComponentProp (component, prop) {
+    if (TestUtils.isDOMComponent(component)) {
+      if (prop === 'className') {
+        return component.className;
+      } else {
+        return component.getAttribute(prop);
+      }
+    } else {
+      return component.props[prop];
+    }
+  }
+
+  function componentHasProp (component, prop) {
+    if (TestUtils.isDOMComponent(component)) {
+      return component.hasAttribute(prop);
+    } else {
+      return component.props && prop in component.props;
+    }
+  }
+
   function getDescendents (components, includeSelf) {
     return _(components)
       .map(function (component) {
-        var components = TestUtils.findAllInRenderedTree(component, function () {
+        var components = rquery_findAllInRenderedTree(component, function () {
           return true;
         });
 
@@ -54,11 +109,10 @@
       runStep: function (context, match) {
         var newScope = _(context.currentScope)
             .map(function (component) {
-              var depth = component._reactInternalInstance._rootNodeID.split('.').length;
+              var depth = componentDepth(component);
 
-              return TestUtils.findAllInRenderedTree(component, function (descendent) {
-                var descendentDepth = descendent._reactInternalInstance._rootNodeID.split('.').length;
-                return depth + 1 === descendentDepth;
+              return rquery_findAllInRenderedTree(context._origRootComponent, function (descendent) {
+                return depth + 1 === componentDepth(descendent);
               });
             })
             .compact()
@@ -106,7 +160,7 @@
       runStep: function (context, match) {
         context.filterScope(function (component) {
           if (TestUtils.isDOMComponent(component)) {
-            return component.getDOMNode().tagName === match[1].toUpperCase();
+            return component.tagName === match[1].toUpperCase();
           }
 
           return false;
@@ -117,9 +171,8 @@
       matcher: /^\.([^\s:.]+)/,
       runStep: function (context, match) {
         context.filterScope(function (component) {
-          if (TestUtils.isDOMComponent(component)
-              && component.props.className) {
-            var classes = component.props.className.split(' ');
+          if (TestUtils.isDOMComponent(component) && component.className) {
+            var classes = component.className.split(' ');
             return classes.indexOf(match[1]) !== -1;
           }
 
@@ -131,13 +184,12 @@
       matcher: /^\[([^\s~|^$*=]+)(?:([~|^$*]?=)"((?:\\"|.)*?)")?\]/,
       runStep: function (context, match) {
         context.filterScope(function (component) {
-          var propName = match[1] === 'class' ? 'className' : match[1],
-              hasProp = TestUtils.isDOMComponent(component)
-                        && propName in component.props;
+          var propName = match[1],
+              hasProp = componentHasProp(component, propName);
 
           if (match[2]) {
             var value = match[3].replace('\\"', '"'),
-                prop = String(component.props[propName]);
+                prop = String(getComponentProp(component, propName));
 
             switch (match[2]) {
               case '=':
@@ -215,8 +267,9 @@
     return steps;
   }
 
-  function Context (rootComponents) {
+  function Context (rootComponents, origRootComponent) {
     this.rootComponents = rootComponents;
+    this._origRootComponent = origRootComponent;
     this.results = [];
     this.defaultScope = getDescendents(rootComponents, true);
     this.resetScope();
@@ -241,7 +294,7 @@
     this.results = _.union(this.results, this.currentScope);
   };
 
-  function rquery (components) {
+  function rquery (components, _rootComponent) {
     if (!isArray(components)) {
       if (components) {
         components = [components];
@@ -251,6 +304,7 @@
     }
 
     this.components = components;
+    this._rootComponent = _rootComponent;
     this.length = components.length;
 
     for (var i = 0; i < components.length; i++) {
@@ -260,7 +314,7 @@
 
   rquery.prototype.find = function (selector) {
     var steps = buildSteps(selector),
-        context = new Context(this.components);
+        context = new Context(this.components, this._rootComponent);
 
     steps.forEach(function (step) {
       step.step.runStep(context, step.match);
@@ -295,7 +349,7 @@
 
   rquery.prototype.simulateEvent = function (eventName, eventData) {
     for (var i = 0; i < this.components.length; i++) {
-      TestUtils.Simulate[eventName](this.components[i].getDOMNode(), eventData);
+      TestUtils.Simulate[eventName](rquery_getDOMNode(this.components[i]), eventData);
     }
 
     return this;
@@ -327,7 +381,9 @@
       throw new Error('$R#prop requires at least one component. No components in current scope.');
     }
 
-    return this[0].props[name];
+    if (componentHasProp(this[0], name)) {
+      return getComponentProp(this[0], name);
+    }
   };
 
   rquery.prototype.state = function (name) {
@@ -339,9 +395,7 @@
   };
 
   rquery.prototype.nodes = function () {
-    return _.map(this.components, function(component) {
-      return component.getDOMNode();
-    });
+    return _.map(this.components, rquery_getDOMNode);
   };
 
   rquery.prototype.text = function () {
@@ -359,7 +413,7 @@
   rquery.prototype.val = function (value) {
     if (value !== undefined) {
       _.each(this.components, function(component) {
-        var node = component.getDOMNode();
+        var node = rquery_getDOMNode(component);
 
         if ('value' in node) {
           node.value = value;
@@ -370,7 +424,7 @@
       return this;
     } else {
       if (this.components[0]) {
-        return this.components[0].getDOMNode().value;
+        return rquery_getDOMNode(this.components[0]).value;
       }
     }
   };
@@ -378,7 +432,7 @@
   rquery.prototype.checked = function (value) {
     if (value !== undefined) {
       _.each(this.components, function (component) {
-        var node = component.getDOMNode();
+        var node = rquery_getDOMNode(component);
 
         if ('checked' in node) {
           node.checked = value;
@@ -389,7 +443,7 @@
       return this;
     } else {
       if (this.components[0]) {
-        return this.components[0].getDOMNode().checked;
+        return rquery_getDOMNode(this.components[0]).checked;
       }
     }
   };
@@ -426,7 +480,14 @@
   });
 
   var $R = function (components, selector) {
-    var $r = new rquery(components);
+    var $r;
+
+    if (isArray(components)) {
+      throw new Error('Cannot initialize an rquery object with an array of components. This prevents rquery from traversing the tree as necessary.');
+    }
+
+    // pass in root component to constructor
+    $r = new rquery(components, components);
 
     if (selector) {
       return $r.find(selector);
