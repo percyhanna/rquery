@@ -322,6 +322,40 @@
     return this;
   };
 
+  rquery.prototype._toggleCheckbox = function () {
+    var i, input, node;
+
+    for (i = 0; i < this.length; i++) {
+      input = this[i];
+
+      if (TestUtils.isDOMComponent(input)) {
+        node = input.getDOMNode();
+
+        if (node.tagName.toUpperCase() === 'INPUT' && node.type.toUpperCase() === 'CHECKBOX') {
+          node.checked = !node.checked;
+        }
+      }
+    }
+  }
+
+  rquery.prototype.toggleCheckbox = function (clickData) {
+    this._toggleCheckbox();
+    this.clickAndChange(clickData);
+
+    return this;
+  };
+
+  rquery.prototype.ensureToggleCheckbox = function (clickData) {
+    if (this.length !== 1) {
+      throw new Error('Called ensureToggleCheckbox, but current context has ' + this.length + ' components. ensureToggleCheckbox only works when 1 component is present.');
+    }
+
+    this._toggleCheckbox();
+    this.ensureClickAndChange(clickData);
+
+    return this;
+  };
+
   rquery.prototype.prop = function (name) {
     if (this.length < 1) {
       throw new Error('$R#prop requires at least one component. No components in current scope.');
