@@ -1,81 +1,92 @@
 describe('Events', function () {
-  var component, stubs;
+  var component, spies;
 
   var TestUtils = React.addons.TestUtils;
 
-  function stub (name) {
-    return stubs[name] = sinon.stub();
+  function spy (name) {
+    return spies[name] = sinon.spy();
   }
 
   beforeEach(function () {
-    stubs = {};
+    spies = {};
+
+    spy('checkbox');
 
     component = TestUtils.renderIntoDocument(React.createElement(
       'div',
       {
-        onClick: stub('div')
+        onClick: spy('div')
       },
       React.createElement('a', {
-        onClick: stubs.a = sinon.spy(function (event) {
+        onClick: spies.a = sinon.spy(function (event) {
           event.stopPropagation();
         })
       }),
       React.createElement('button', {
         className: 'first-button',
-        onClick: stub('button1')
+        onClick: spy('button1')
       }),
       React.createElement('button', {
         className: 'second-button',
-        onClick: stub('button2')
+        onClick: spy('button2')
+      }),
+      React.createElement('input', {
+        type: 'checkbox',
+        checked: false,
+        onChange: function (event) {
+          spies.checkbox(event.target.checked);
+        }
       })
     ));
+
+    this.$r = $R(component);
   });
 
   describe('#click on top-level component', function () {
     beforeEach(function () {
-      $R(component).click();
+      this.$r.click();
     });
 
     it('calls the div onClick handler', function () {
-      expect(stubs.div).to.have.been.called;
+      expect(spies.div).to.have.been.called;
     });
 
     it('does not call any other handler', function () {
-      expect(stubs.a).to.not.have.been.called;
-      expect(stubs.button1).to.not.have.been.called;
-      expect(stubs.button2).to.not.have.been.called;
+      expect(spies.a).to.not.have.been.called;
+      expect(spies.button1).to.not.have.been.called;
+      expect(spies.button2).to.not.have.been.called;
     });
   });
 
   describe('#click on a tag component', function () {
     beforeEach(function () {
-      $R(component, 'button').click();
+      this.$r.find('button').click();
     });
 
     it('calls the button1 onClick handler', function () {
-      expect(stubs.button1).to.have.been.called;
+      expect(spies.button1).to.have.been.called;
     });
 
     it('calls the button2 onClick handler', function () {
-      expect(stubs.button2).to.have.been.called;
+      expect(spies.button2).to.have.been.called;
     });
 
     it('bubbles up to the div onClick handler', function () {
-      expect(stubs.div).to.have.been.called;
+      expect(spies.div).to.have.been.called;
     });
   });
 
   describe('#click that stops bubbling', function () {
     beforeEach(function () {
-      $R(component, 'a').click();
+      this.$r.find('a').click();
     });
 
     it('calls the a onClick handler', function () {
-      expect(stubs.a).to.have.been.called;
+      expect(spies.a).to.have.been.called;
     });
 
     it('does not bubble up to the div onClick handler', function () {
-      expect(stubs.div).to.not.have.been.called;
+      expect(spies.div).to.not.have.been.called;
     });
   });
 
@@ -83,23 +94,49 @@ describe('Events', function () {
     describe('when 0 components are found', function () {
       it('throws an error', function () {
         expect(function () {
-          $R(component, 'h1').ensureClick();
-        }).to.throw('Called ensureClick, but current context has 0 components. ensureClick only works when 1 component is present.');
+          this.$r.find('h1').ensureClick();
+        }.bind(this)).to.throw('Called ensureClick, but current context has 0 components. ensureClick only works when 1 component is present.');
       });
     });
 
     describe('when 2 components are found', function () {
       it('throws an error', function () {
         expect(function () {
-          $R(component, 'button').ensureClick();
-        }).to.throw('Called ensureClick, but current context has 2 components. ensureClick only works when 1 component is present.');
+          this.$r.find('button').ensureClick();
+        }.bind(this)).to.throw('Called ensureClick, but current context has 2 components. ensureClick only works when 1 component is present.');
       });
     });
 
     describe('when 1 component is found', function () {
       it('clicks the component', function () {
-        $R(component, 'a').ensureClick();
-        expect(stubs.a).to.have.been.called;
+        this.$r.find('a').ensureClick();
+        expect(spies.a).to.have.been.called;
+      });
+    });
+  });
+
+  describe('#ensureToggleCheckbox', function () {
+    describe('when 0 components are found', function () {
+      it('throws an error', function () {
+        expect(function () {
+          this.$r.find('h1').ensureToggleCheckbox();
+        }.bind(this)).to.throw('Called ensureToggleCheckbox, but current context has 0 components. ensureToggleCheckbox only works when 1 component is present.');
+      });
+    });
+
+    describe('when 2 components are found', function () {
+      it('throws an error', function () {
+        expect(function () {
+          this.$r.find('button').ensureToggleCheckbox();
+        }.bind(this)).to.throw('Called ensureToggleCheckbox, but current context has 2 components. ensureToggleCheckbox only works when 1 component is present.');
+      });
+    });
+
+    describe('when 1 component is found', function () {
+      it('clicks the component', function () {
+        expect(this.$r.find('input').nodes()[0].checked).to.be.false;
+        this.$r.find('input').ensureToggleCheckbox();
+        expect(spies.checkbox).to.have.been.calledWith(true);
       });
     });
   });
