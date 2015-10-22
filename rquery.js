@@ -377,14 +377,12 @@
   };
 
   rquery.prototype._toggleCheckbox = function () {
-    var i, input, node;
+    var i, node;
 
     for (i = 0; i < this.length; i++) {
-      input = this[i];
+      node = this[i];
 
-      if (TestUtils.isDOMComponent(input)) {
-        node = input.getDOMNode();
-
+      if (TestUtils.isDOMComponent(node)) {
         if (node.tagName.toUpperCase() === 'INPUT' && node.type.toUpperCase() === 'CHECKBOX') {
           node.checked = !node.checked;
         }
