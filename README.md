@@ -23,8 +23,10 @@ dispatching.
 
 ```javascript
 var _ = require('lodash');
-var React = require('react/addons');
-var $R = require('rquery')(_, React);
+var React = require('react');
+var ReactDOM = require('react-dom');
+var TestUtils = require('react-addons-test-utils');
+var $R = require('rquery')(_, React, ReactDOM, TestUtils);
 ```
 
 ### Browser with Scripttags
@@ -34,7 +36,8 @@ Include React, lodash, and rquery in the page, then you get the `$R` global.
 Sample usage:
 
 ```html
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.13.1/react-with-addons.min.js"></script>
+<script src="https://fb.me/react-with-addons-0.14.1.js"></script>
+<script src="https://fb.me/react-dom-0.14.1.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.6.0/lodash.min.js"></script>
 <script src="rquery.js"></script>
 <script>
@@ -47,7 +50,7 @@ var component = React.createClass({
 var el = document.createElement('div');
 document.body.appendChild(el);
 
-var comp = React.render(React.createElement(component), el);
+var comp = ReactDOM.render(React.createElement(component), el);
 
 var $r = $R(comp);
 
