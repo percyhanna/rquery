@@ -148,7 +148,8 @@
             return component._reactInternalInstance
                 && component._reactInternalInstance._currentElement
                 && component._reactInternalInstance._currentElement.type
-                && component._reactInternalInstance._currentElement.type.displayName === match[1];
+                && (component._reactInternalInstance._currentElement.type.displayName === match[1]
+                || component._reactInternalInstance._currentElement.type.name === match[1]);
           }
 
           return false;
