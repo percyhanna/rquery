@@ -30,7 +30,8 @@ describe('Selectors', function () {
             React.createElement('a', { className: 'button', target: '_blank', 'data-something': 'hello ' }, 'Click me!'),
             React.createElement('button', { className: 'button button-default' }, 'Save'),
             React.createElement('span', {}, 'descendant'),
-            React.createElement(childComponent)
+            React.createElement(childComponent),
+            React.createElement('div', {}, React.createElement('span', {}, 'not a child of p'))
           )
         );
       }
@@ -87,7 +88,7 @@ describe('Selectors', function () {
     });
 
     it('finds all span components', function () {
-      expect(this.$r).to.have.length(2);
+      expect(this.$r).to.have.length(3);
     });
   });
 
@@ -97,7 +98,17 @@ describe('Selectors', function () {
     });
 
     it('finds all child span components', function () {
-      expect(this.$r).to.have.length(1);
+      expect(this.$r).to.have.length(2);
+    });
+
+    describe('when descendant is of same depth, but not a child', function () {
+      before(function () {
+        this.$r = run('p > span')
+      });
+
+      it('does not match the cousin', function () {
+        expect(this.$r).to.have.length(1);
+      });
     });
 
     describe('internal composite DOM components', function () {
@@ -136,8 +147,8 @@ describe('Selectors', function () {
         this.$r = run('MyComponent > div');
       });
 
-      it('does not return the composite component\'s DOM component', function () {
-        expect(this.$r).to.have.length(0);
+      it('returns the composite component\'s DOM component', function () {
+        expect(this.$r).to.have.length(1);
       });
     });
   });

@@ -41,11 +41,7 @@
   }
 
   function componentDepth (component) {
-    if (TestUtils.isDOMComponent(component)) {
-      return component.getAttribute('data-reactid').split('.').length;
-    } else {
-      return component._reactInternalInstance._rootNodeID.split('.').length;
-    }
+    return rquery_getReactId(component).split('.').length;
   }
 
   function rquery_getDOMNode (component) {
@@ -54,6 +50,10 @@
     }
 
     return ReactDOM.findDOMNode(component);
+  }
+
+  function rquery_getReactId (component) {
+    return rquery_getDOMNode(component).getAttribute('data-reactid');
   }
 
   function getComponentProp (component, prop) {
@@ -109,10 +109,15 @@
       runStep: function (context, match) {
         var newScope = _(context.currentScope)
             .map(function (component) {
-              var depth = componentDepth(component);
+              var depth = componentDepth(component),
+                  prefix = rquery_getReactId(component) + '.',
+                  prefixLength = prefix.length;
 
               return rquery_findAllInRenderedTree(context._origRootComponent, function (descendant) {
-                return depth + 1 === componentDepth(descendant);
+                var descendantDepth = componentDepth(descendant),
+                    reactId = rquery_getReactId(descendant).substring(0, prefixLength);
+
+                return depth + 1 === descendantDepth && reactId === prefix;
               });
             })
             .compact()
