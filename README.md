@@ -181,7 +181,66 @@ Convenience helper methods to trigger any supported React DOM event. See the
 [React documentation](http://facebook.github.io/react/docs/events.html) to read
 about the events that are currently supported.
 
-### Selectors
+## Selectors
+
+### Scope Selectors
+
+#### Descendant Selector
+
+**Example**:
+
+```javascript
+$R(component).find('div p');
+```
+
+**Description**:
+
+Finds all elements that are descendants of a parent component/node. Note that
+the root element of a component will be matched as a descendant of it
+(e.g. `MyComponent > div` will match `<div>` at root of `MyComponent#render`).
+
+#### Child Selector
+
+**Example**:
+
+```javascript
+$R(component).find('div > p');
+```
+
+**Description**:
+
+Finds all elements that are children (direct descendant) of a parent
+component/node.
+
+#### Union Selector
+
+**Example**:
+
+```javascript
+$R(component).find('div, p');
+```
+
+**Description**:
+
+Matches a union of all selectors on both sides of the `,`.
+
+#### Not Selector
+
+**Example**:
+
+```javascript
+$R(component).find('div :not(p)');
+```
+
+**Description**:
+
+Matches all elements that do _not_ match the nested selector. **NB**: Note the
+difference between `div :not(p)` and `div:not(p)`. The latter will match nothing
+as the `:not` is being applied directly on the `div`. However, `div :not(p)`
+applies a descendant scope selector first, which means it will match all
+elements that are descendants of `div` but not a `p`.
+
+### Element/Component Selectors
 
 #### Component Selector
 
@@ -226,6 +285,19 @@ $R(component, '.green');
 
 Traverses the tree to find components with `className`s that contain the
 specified class.
+
+#### Index Selector
+
+**Example**:
+
+```javascript
+$R(component).find('div[2]'); // matches the third div
+```
+
+**Description**:
+
+Matches the element at the given index. This is shorthand for `.at(index)` on
+the `rquery` object.
 
 #### Attribute Selector
 

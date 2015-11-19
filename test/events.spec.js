@@ -36,6 +36,10 @@ describe('Events', function () {
         onChange: function (event) {
           spies.checkbox(event.target.checked);
         }
+      }),
+      React.createElement('select', {
+        disabled: true,
+        onClick: spy('select')
       })
     ));
 
@@ -111,6 +115,18 @@ describe('Events', function () {
       it('clicks the component', function () {
         this.$r.find('a').ensureClick();
         expect(spies.a).to.have.been.called;
+      });
+    });
+
+    describe('when component is disabled', function () {
+      it('throws an error', function () {
+        expect(function () {
+          this.$r.find('select').ensureClick();
+        }.bind(this)).to.throw('Called ensureClick, but the targeted element is disabled.');
+      });
+
+      it('does not click the component', function () {
+        expect(spies.select).to.not.have.been.called;
       });
     });
   });

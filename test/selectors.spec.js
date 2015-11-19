@@ -26,11 +26,12 @@ describe('Selectors', function () {
         return (
           React.createElement('div', { id: 'my-component', className: 'my-class some-other-class' },
             React.createElement('p', {}, 'Hello, world!'),
-            React.createElement('p', {}, React.createElement('span', {}, 'not descendent')),
+            React.createElement('p', {}, React.createElement('span', {}, 'not descendant')),
             React.createElement('a', { className: 'button', target: '_blank', 'data-something': 'hello ' }, 'Click me!'),
             React.createElement('button', { className: 'button button-default' }, 'Save'),
-            React.createElement('span', {}, 'descendent'),
-            React.createElement(childComponent)
+            React.createElement('span', {}, 'descendant'),
+            React.createElement(childComponent),
+            React.createElement('div', {}, React.createElement('span', {}, 'not a child of p'))
           )
         );
       }
@@ -81,12 +82,14 @@ describe('Selectors', function () {
     });
   });
 
-  describe('descendent selector', function () {
-    before(function () {
+  describe('descendant selector', function () {
+    it('finds all span components', function () {
       this.$r = run('div span');
+      expect(this.$r).to.have.length(3);
     });
 
-    it('finds all span components', function () {
+    it('finds all p components', function () {
+      this.$r = run('div p');
       expect(this.$r).to.have.length(2);
     });
   });
@@ -97,7 +100,17 @@ describe('Selectors', function () {
     });
 
     it('finds all child span components', function () {
-      expect(this.$r).to.have.length(1);
+      expect(this.$r).to.have.length(2);
+    });
+
+    describe('when descendant is of same depth, but not a child', function () {
+      before(function () {
+        this.$r = run('p > span')
+      });
+
+      it('does not match the cousin', function () {
+        expect(this.$r).to.have.length(1);
+      });
     });
 
     describe('internal composite DOM components', function () {
@@ -136,8 +149,8 @@ describe('Selectors', function () {
         this.$r = run('MyComponent > div');
       });
 
-      it('does not return the composite component\'s DOM component', function () {
-        expect(this.$r).to.have.length(0);
+      it('returns the composite component\'s DOM component', function () {
+        expect(this.$r).to.have.length(1);
       });
     });
   });
@@ -203,6 +216,22 @@ describe('Selectors', function () {
 
     it('has the correct class names', function () {
       expect(this.$r[0]).to.have.prop('className', 'my-class some-other-class');
+    });
+  });
+
+  describe('index selector', function () {
+    it('matches the indexed element', function () {
+      this.$r = run('div[0]');
+
+      expect(this.$r).to.have.length(1);
+      expect(this.$r[0].tagName).to.eql('DIV');
+      expect(this.$r[0].className).to.eql('my-class some-other-class');
+    });
+
+    it('matches nothing if index out of range', function () {
+      this.$r = run('div[2]');
+
+      expect(this.$r).to.have.length(0);
     });
   });
 
@@ -364,7 +393,7 @@ describe('Selectors', function () {
   describe(':contains() selector', function () {
     describe('when not scoped to a specific element', function () {
       before(function () {
-        this.$r = run(':contains(descendent)');
+        this.$r = run(':contains(descendant)');
       });
 
       it('finds all components that contain the text', function () {
@@ -374,12 +403,129 @@ describe('Selectors', function () {
 
     describe('when scoped to a specific element', function () {
       before(function () {
-        this.$r = run('div :contains(descendent)');
+        this.$r = run('div :contains(descendant)');
       });
 
       it('finds all scoped components that contain the text', function () {
         expect(this.$r).to.have.length(3);
       });
+    });
+  });
+
+  describe(':not() selector', function () {
+    describe('when scoped to descendants', function () {
+      before(function () {
+        this.$r = run('div :not(p)');
+      });
+
+      it('matches all descendants that do not match the given selector', function () {
+        expect(this.$r).to.have.length(7);
+
+        expect(this.$r.components.map(function (component) {
+          return component.tagName;
+        })).to.eql([
+          'SPAN',
+          'A',
+          'BUTTON',
+          'SPAN',
+          'BUTTON',
+          'DIV',
+          'SPAN'
+        ]);
+
+        expect(this.$r.components.map(function (component) {
+          return component.className;
+        })).to.eql([
+          '',
+          'button',
+          'button button-default',
+          '',
+          'child-component',
+          '',
+          ''
+        ]);
+      });
+    });
+
+    describe('when scoped to children', function () {
+      before(function () {
+        this.$r = run('div > :not(p)');
+      });
+
+      it('matches all children that do not match the given selector', function () {
+        expect(this.$r).to.have.length(7);
+
+        // a.button, button.button.button-default, span, Constructor, button.child-component, div, span
+        expect(this.$r.components.map(function (component) {
+          return component.tagName;
+        })).to.eql([
+          'A',
+          'BUTTON',
+          'SPAN',
+          undefined,
+          'BUTTON',
+          'DIV',
+          'SPAN'
+        ]);
+
+        expect(this.$r.components.map(function (component) {
+          return component.className;
+        })).to.eql([
+          'button',
+          'button button-default',
+          '',
+          undefined,
+          'child-component',
+          '',
+          ''
+        ]);
+      });
+    });
+
+    describe('when using union selector', function () {
+      before(function () {
+        this.$r = run('div :not(p, button, span)');
+      });
+
+      it('matches all children that do not match the given selector', function () {
+        expect(this.$r).to.have.length(2);
+
+        expect(this.$r.components.map(function (component) {
+          return component.tagName;
+        })).to.eql([
+          'A',
+          'DIV'
+        ]);
+
+        expect(this.$r.components.map(function (component) {
+          return component.className;
+        })).to.eql([
+          'button',
+          ''
+        ]);
+      });
+    });
+
+    describe('when match negates self', function () {
+      before(function () {
+        this.$r = run('div.my-class:not(.my-class)');
+      });
+
+      it('matches nothing', function () {
+        expect(this.$r).to.have.length(0);
+      });
+    });
+
+    it('throws an error on missing )', function () {
+      expect(function () {
+        run(':not(');
+      }).to.throw('Syntax error, unclosed )');
+    });
+
+    it('throws an error on un-matched )', function () {
+      expect(function () {
+        run(')');
+      }).to.throw('Syntax error, unmatched )');
     });
   });
 });

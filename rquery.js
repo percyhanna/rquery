@@ -19,13 +19,13 @@
     return Object.prototype.toString.call(arr) === '[object Array]';
   }
 
-  function descendentsFromNode (node) {
+  function descendantsFromNode (node) {
     return _.chain(node.childNodes).filter(function (node) {
       return node.nodeType === Node.ELEMENT_NODE;
     }).map(function (node) {
-      var descendents = descendentsFromNode(node);
-      descendents.unshift(node);
-      return descendents;
+      var descendants = descendantsFromNode(node);
+      descendants.unshift(node);
+      return descendants;
     }).flatten().value();
   }
 
@@ -33,7 +33,7 @@
     var components;
 
     if (TestUtils.isDOMComponent(component)) {
-      components = descendentsFromNode(component);
+      components = descendantsFromNode(component);
       return _.filter(components, predicate);
     } else {
       return TestUtils.findAllInRenderedTree(component, predicate);
@@ -41,11 +41,7 @@
   }
 
   function componentDepth (component) {
-    if (TestUtils.isDOMComponent(component)) {
-      return component.getAttribute('data-reactid').split('.').length;
-    } else {
-      return component._reactInternalInstance._rootNodeID.split('.').length;
-    }
+    return rquery_getReactId(component).split('.').length;
   }
 
   function rquery_getDOMNode (component) {
@@ -54,6 +50,10 @@
     }
 
     return ReactDOM.findDOMNode(component);
+  }
+
+  function rquery_getReactId (component) {
+    return rquery_getDOMNode(component).getAttribute('data-reactid');
   }
 
   function getComponentProp (component, prop) {
@@ -76,7 +76,9 @@
     }
   }
 
-  function getDescendents (components, includeSelf) {
+  function getDescendants (components, includeSelf) {
+    var index;
+
     return _(components)
       .map(function (component) {
         var components = rquery_findAllInRenderedTree(component, function () {
@@ -84,7 +86,9 @@
         });
 
         if (!includeSelf) {
-          components.shift();
+          while ((index = components.indexOf(component)) !== -1) {
+            components.splice(index, 1)
+          }
         }
 
         return components;
@@ -103,16 +107,40 @@
   }
 
   var STEP_DEFINITIONS = [
+    // group modifiers
+    {
+      matcher: /^:not\(/,
+      pushStack: true,
+      runStep: function (context, match, steps) {
+        var notContext = new Context([], context._origRootComponent);
+        notContext.defaultScope = context.currentScope.slice();
+        notContext.resetScope();
+
+        runSteps(steps, notContext);
+
+        context.setScope(_.without.apply(_, [context.currentScope].concat(notContext.results)));
+      }
+    },
+    {
+      matcher: /^\)/,
+      popStack: true
+    },
+
     // scope modifiers
     {
       matcher: /^\s*>\s*/,
       runStep: function (context, match) {
         var newScope = _(context.currentScope)
             .map(function (component) {
-              var depth = componentDepth(component);
+              var depth = componentDepth(component),
+                  prefix = rquery_getReactId(component) + '.',
+                  prefixLength = prefix.length;
 
-              return rquery_findAllInRenderedTree(context._origRootComponent, function (descendent) {
-                return depth + 1 === componentDepth(descendent);
+              return rquery_findAllInRenderedTree(context._origRootComponent, function (descendant) {
+                var descendantDepth = componentDepth(descendant),
+                    reactId = rquery_getReactId(descendant).substring(0, prefixLength);
+
+                return depth + 1 === descendantDepth && reactId === prefix;
               });
             })
             .compact()
@@ -134,7 +162,7 @@
     {
       matcher: /^\s+/,
       runStep: function (context, match) {
-        var newScope = getDescendents(context.currentScope, false);
+        var newScope = getDescendants(context.currentScope, false);
         context.setScope(newScope);
       }
     },
@@ -169,7 +197,7 @@
       }
     },
     {
-      matcher: /^\.([^\s:.]+)/,
+      matcher: /^\.([^\s:.)!\[\]]+)/,
       runStep: function (context, match) {
         context.filterScope(function (component) {
           if (TestUtils.isDOMComponent(component) && component.className) {
@@ -179,6 +207,20 @@
 
           return false;
         });
+      }
+    },
+    {
+      // `.find('div[1]')` is shorthand for `find('div').at(1)`
+      matcher: /^\[(\d+)\]/,
+      runStep: function (context, match) {
+        var index = parseInt(match[1], 10),
+            newScope = [];
+
+        if (context.currentScope[index]) {
+          newScope.push(context.currentScope[index]);
+        }
+
+        context.setScope(newScope);
       }
     },
     {
@@ -251,28 +293,57 @@
   }
 
   function buildSteps (selector) {
-    var step,
-        steps = [];
+    var parsedStep, step,
+        steps = [],
+        stack = [];
 
     while (!isEmptyString(selector)) {
-      step = parseNextStep(selector);
+      parsedStep = parseNextStep(selector);
 
-      if (step) {
-        steps.push(step);
-        selector = selector.substr(step.match[0].length);
+      if (parsedStep) {
+        step = parsedStep.step;
+        steps.push(parsedStep);
+
+        if (step.pushStack) {
+          stack.push(steps);
+          parsedStep.steps = steps = [];
+        } else if (step.popStack) {
+          if (stack.length < 1) {
+            throw new Error('Syntax error, unmatched )');
+          }
+
+          // pop ourselves from the steps array, as we don't actually do anything
+          steps.pop();
+
+          steps = stack.pop();
+        }
+
+        selector = selector.substr(parsedStep.match[0].length);
       } else {
         throw new Error('Failed to parse selector at: ' + selector);
       }
     }
 
+    if (stack.length !== 0) {
+      throw new Error('Syntax error, unclosed )');
+    }
+
     return steps;
+  }
+
+  function runSteps (steps, context) {
+    steps.forEach(function (step) {
+      step.step.runStep(context, step.match, step.steps);
+    });
+
+    context.saveResults();
   }
 
   function Context (rootComponents, origRootComponent) {
     this.rootComponents = rootComponents;
     this._origRootComponent = origRootComponent;
     this.results = [];
-    this.defaultScope = getDescendents(rootComponents, true);
+    this.defaultScope = getDescendants(rootComponents, true);
     this.resetScope();
   }
 
@@ -317,11 +388,7 @@
     var steps = buildSteps(selector),
         context = new Context(this.components, this._rootComponent);
 
-    steps.forEach(function (step) {
-      step.step.runStep(context, step.match);
-    });
-
-    context.saveResults();
+    runSteps(steps, context);
 
     return new rquery(context.results);
   };
@@ -357,9 +424,14 @@
   };
 
   rquery.prototype.ensureSimulateEvent = function (eventName, eventData) {
+    var name = 'ensure' + eventName[0].toUpperCase() + eventName.substr(1);
+
     if (this.length !== 1) {
-      var name = 'ensure' + eventName[0].toUpperCase() + eventName.substr(1);
       throw new Error('Called ' + name + ', but current context has ' + this.length + ' components. ' + name + ' only works when 1 component is present.');
+    }
+
+    if (eventName === 'click' && this[0].disabled) {
+      throw new Error('Called ' + name + ', but the targeted element is disabled.');
     }
 
     return this.simulateEvent(eventName, eventData);
