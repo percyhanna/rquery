@@ -295,7 +295,7 @@
           parsedStep.steps = steps = [];
         } else if (step.popStack) {
           if (stack.length < 1) {
-            throw new Error('Syntax error, unmatched ) at: ' + selector);
+            throw new Error('Syntax error, unmatched )');
           }
 
           // pop ourselves from the steps array, as we don't actually do anything

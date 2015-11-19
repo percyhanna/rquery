@@ -499,5 +499,17 @@ describe('Selectors', function () {
         expect(this.$r).to.have.length(0);
       });
     });
+
+    it('throws an error on missing )', function () {
+      expect(function () {
+        run(':not(');
+      }).to.throw('Syntax error, unclosed )');
+    });
+
+    it('throws an error on un-matched )', function () {
+      expect(function () {
+        run(')');
+      }).to.throw('Syntax error, unmatched )');
+    });
   });
 });
