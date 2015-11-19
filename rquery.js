@@ -19,13 +19,13 @@
     return Object.prototype.toString.call(arr) === '[object Array]';
   }
 
-  function descendentsFromNode (node) {
+  function descendantsFromNode (node) {
     return _.chain(node.childNodes).filter(function (node) {
       return node.nodeType === Node.ELEMENT_NODE;
     }).map(function (node) {
-      var descendents = descendentsFromNode(node);
-      descendents.unshift(node);
-      return descendents;
+      var descendants = descendantsFromNode(node);
+      descendants.unshift(node);
+      return descendants;
     }).flatten().value();
   }
 
@@ -33,7 +33,7 @@
     var components;
 
     if (TestUtils.isDOMComponent(component)) {
-      components = descendentsFromNode(component);
+      components = descendantsFromNode(component);
       return _.filter(components, predicate);
     } else {
       return TestUtils.findAllInRenderedTree(component, predicate);
@@ -76,7 +76,7 @@
     }
   }
 
-  function getDescendents (components, includeSelf) {
+  function getDescendants (components, includeSelf) {
     return _(components)
       .map(function (component) {
         var components = rquery_findAllInRenderedTree(component, function () {
@@ -111,8 +111,8 @@
             .map(function (component) {
               var depth = componentDepth(component);
 
-              return rquery_findAllInRenderedTree(context._origRootComponent, function (descendent) {
-                return depth + 1 === componentDepth(descendent);
+              return rquery_findAllInRenderedTree(context._origRootComponent, function (descendant) {
+                return depth + 1 === componentDepth(descendant);
               });
             })
             .compact()
@@ -134,7 +134,7 @@
     {
       matcher: /^\s+/,
       runStep: function (context, match) {
-        var newScope = getDescendents(context.currentScope, false);
+        var newScope = getDescendants(context.currentScope, false);
         context.setScope(newScope);
       }
     },
@@ -272,7 +272,7 @@
     this.rootComponents = rootComponents;
     this._origRootComponent = origRootComponent;
     this.results = [];
-    this.defaultScope = getDescendents(rootComponents, true);
+    this.defaultScope = getDescendants(rootComponents, true);
     this.resetScope();
   }
 

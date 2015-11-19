@@ -26,10 +26,10 @@ describe('Selectors', function () {
         return (
           React.createElement('div', { id: 'my-component', className: 'my-class some-other-class' },
             React.createElement('p', {}, 'Hello, world!'),
-            React.createElement('p', {}, React.createElement('span', {}, 'not descendent')),
+            React.createElement('p', {}, React.createElement('span', {}, 'not descendant')),
             React.createElement('a', { className: 'button', target: '_blank', 'data-something': 'hello ' }, 'Click me!'),
             React.createElement('button', { className: 'button button-default' }, 'Save'),
-            React.createElement('span', {}, 'descendent'),
+            React.createElement('span', {}, 'descendant'),
             React.createElement(childComponent)
           )
         );
@@ -81,7 +81,7 @@ describe('Selectors', function () {
     });
   });
 
-  describe('descendent selector', function () {
+  describe('descendant selector', function () {
     before(function () {
       this.$r = run('div span');
     });
@@ -364,7 +364,7 @@ describe('Selectors', function () {
   describe(':contains() selector', function () {
     describe('when not scoped to a specific element', function () {
       before(function () {
-        this.$r = run(':contains(descendent)');
+        this.$r = run(':contains(descendant)');
       });
 
       it('finds all components that contain the text', function () {
@@ -374,7 +374,7 @@ describe('Selectors', function () {
 
     describe('when scoped to a specific element', function () {
       before(function () {
-        this.$r = run('div :contains(descendent)');
+        this.$r = run('div :contains(descendant)');
       });
 
       it('finds all scoped components that contain the text', function () {
