@@ -83,12 +83,14 @@ describe('Selectors', function () {
   });
 
   describe('descendant selector', function () {
-    before(function () {
+    it('finds all span components', function () {
       this.$r = run('div span');
+      expect(this.$r).to.have.length(3);
     });
 
-    it('finds all span components', function () {
-      expect(this.$r).to.have.length(3);
+    it('finds all p components', function () {
+      this.$r = run('div p');
+      expect(this.$r).to.have.length(2);
     });
   });
 

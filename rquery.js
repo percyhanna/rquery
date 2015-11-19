@@ -77,6 +77,8 @@
   }
 
   function getDescendants (components, includeSelf) {
+    var index;
+
     return _(components)
       .map(function (component) {
         var components = rquery_findAllInRenderedTree(component, function () {
@@ -84,7 +86,9 @@
         });
 
         if (!includeSelf) {
-          components.shift();
+          while ((index = components.indexOf(component)) !== -1) {
+            components.splice(index, 1)
+          }
         }
 
         return components;
