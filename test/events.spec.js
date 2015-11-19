@@ -122,7 +122,7 @@ describe('Events', function () {
       it('throws an error', function () {
         expect(function () {
           this.$r.find('select').ensureClick();
-        }.bind(this)).to.throw('');
+        }.bind(this)).to.throw('Called ensureClick, but the targeted element is disabled.');
       });
 
       it('does not click the component', function () {
