@@ -219,6 +219,22 @@ describe('Selectors', function () {
     });
   });
 
+  describe('index selector', function () {
+    it('matches the indexed element', function () {
+      this.$r = run('div[0]');
+
+      expect(this.$r).to.have.length(1);
+      expect(this.$r[0].tagName).to.eql('DIV');
+      expect(this.$r[0].className).to.eql('my-class some-other-class');
+    });
+
+    it('matches nothing if index out of range', function () {
+      this.$r = run('div[2]');
+
+      expect(this.$r).to.have.length(0);
+    });
+  });
+
   describe('attribute selector', function () {
     before(function () {
       this.$r = run('[target]');

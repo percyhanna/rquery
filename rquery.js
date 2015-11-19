@@ -210,6 +210,20 @@
       }
     },
     {
+      // `.find('div[1]')` is shorthand for `find('div').at(1)`
+      matcher: /^\[(\d+)\]/,
+      runStep: function (context, match) {
+        var index = parseInt(match[1], 10),
+            newScope = [];
+
+        if (context.currentScope[index]) {
+          newScope.push(context.currentScope[index]);
+        }
+
+        context.setScope(newScope);
+      }
+    },
+    {
       matcher: /^\[([^\s~|^$*=]+)(?:([~|^$*]?=)"((?:\\"|.)*?)")?\]/,
       runStep: function (context, match) {
         context.filterScope(function (component) {
