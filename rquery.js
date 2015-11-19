@@ -107,6 +107,25 @@
   }
 
   var STEP_DEFINITIONS = [
+    // group modifiers
+    {
+      matcher: /^:not\(/,
+      pushStack: true,
+      runStep: function (context, match, steps) {
+        var notContext = new Context([], context._origRootComponent);
+        notContext.defaultScope = context.currentScope.slice();
+        notContext.resetScope();
+
+        runSteps(steps, notContext);
+
+        context.setScope(_.without.apply(_, [context.currentScope].concat(notContext.results)));
+      }
+    },
+    {
+      matcher: /^\)/,
+      popStack: true
+    },
+
     // scope modifiers
     {
       matcher: /^\s*>\s*/,
@@ -260,21 +279,50 @@
   }
 
   function buildSteps (selector) {
-    var step,
-        steps = [];
+    var parsedStep, step,
+        steps = [],
+        stack = [];
 
     while (!isEmptyString(selector)) {
-      step = parseNextStep(selector);
+      parsedStep = parseNextStep(selector);
 
-      if (step) {
-        steps.push(step);
-        selector = selector.substr(step.match[0].length);
+      if (parsedStep) {
+        step = parsedStep.step;
+        steps.push(parsedStep);
+
+        if (step.pushStack) {
+          stack.push(steps);
+          parsedStep.steps = steps = [];
+        } else if (step.popStack) {
+          if (stack.length < 1) {
+            throw new Error('Syntax error, unmatched ) at: ' + selector);
+          }
+
+          // pop ourselves from the steps array, as we don't actually do anything
+          steps.pop();
+
+          steps = stack.pop();
+        }
+
+        selector = selector.substr(parsedStep.match[0].length);
       } else {
         throw new Error('Failed to parse selector at: ' + selector);
       }
     }
 
+    if (stack.length !== 0) {
+      throw new Error('Syntax error, unclosed )');
+    }
+
     return steps;
+  }
+
+  function runSteps (steps, context) {
+    steps.forEach(function (step) {
+      step.step.runStep(context, step.match, step.steps);
+    });
+
+    context.saveResults();
   }
 
   function Context (rootComponents, origRootComponent) {
@@ -326,11 +374,7 @@
     var steps = buildSteps(selector),
         context = new Context(this.components, this._rootComponent);
 
-    steps.forEach(function (step) {
-      step.step.runStep(context, step.match);
-    });
-
-    context.saveResults();
+    runSteps(steps, context);
 
     return new rquery(context.results);
   };

@@ -395,4 +395,109 @@ describe('Selectors', function () {
       });
     });
   });
+
+  describe(':not() selector', function () {
+    describe('when scoped to descendants', function () {
+      before(function () {
+        this.$r = run('div :not(p)');
+      });
+
+      it('matches all descendants that do not match the given selector', function () {
+        expect(this.$r).to.have.length(7);
+
+        expect(this.$r.components.map(function (component) {
+          return component.tagName;
+        })).to.eql([
+          'SPAN',
+          'A',
+          'BUTTON',
+          'SPAN',
+          'BUTTON',
+          'DIV',
+          'SPAN'
+        ]);
+
+        expect(this.$r.components.map(function (component) {
+          return component.className;
+        })).to.eql([
+          '',
+          'button',
+          'button button-default',
+          '',
+          'child-component',
+          '',
+          ''
+        ]);
+      });
+    });
+
+    describe('when scoped to children', function () {
+      before(function () {
+        this.$r = run('div > :not(p)');
+      });
+
+      it('matches all children that do not match the given selector', function () {
+        expect(this.$r).to.have.length(7);
+
+        // a.button, button.button.button-default, span, Constructor, button.child-component, div, span
+        expect(this.$r.components.map(function (component) {
+          return component.tagName;
+        })).to.eql([
+          'A',
+          'BUTTON',
+          'SPAN',
+          undefined,
+          'BUTTON',
+          'DIV',
+          'SPAN'
+        ]);
+
+        expect(this.$r.components.map(function (component) {
+          return component.className;
+        })).to.eql([
+          'button',
+          'button button-default',
+          '',
+          undefined,
+          'child-component',
+          '',
+          ''
+        ]);
+      });
+    });
+
+    describe('when using union selector', function () {
+      before(function () {
+        this.$r = run('div :not(p, button, span)');
+      });
+
+      it('matches all children that do not match the given selector', function () {
+        expect(this.$r).to.have.length(2);
+
+        expect(this.$r.components.map(function (component) {
+          return component.tagName;
+        })).to.eql([
+          'A',
+          'DIV'
+        ]);
+
+        expect(this.$r.components.map(function (component) {
+          return component.className;
+        })).to.eql([
+          'button',
+          ''
+        ]);
+      });
+    });
+
+    describe('when match negates self', function () {
+      before(function () {
+        this.$r = run('div.my-class:not(.my-class)');
+      });
+
+      it('matches nothing', function () {
+        expect(this.$r).to.have.length(0);
+      });
+    });
+  });
 });
