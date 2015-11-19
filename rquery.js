@@ -357,9 +357,14 @@
   };
 
   rquery.prototype.ensureSimulateEvent = function (eventName, eventData) {
+    var name = 'ensure' + eventName[0].toUpperCase() + eventName.substr(1);
+
     if (this.length !== 1) {
-      var name = 'ensure' + eventName[0].toUpperCase() + eventName.substr(1);
       throw new Error('Called ' + name + ', but current context has ' + this.length + ' components. ' + name + ' only works when 1 component is present.');
+    }
+
+    if (eventName === 'click' && this[0].disabled) {
+      throw new Error('Called ' + name + ', but the targeted element is disabled.');
     }
 
     return this.simulateEvent(eventName, eventData);
