@@ -174,7 +174,7 @@
       }
     },
     {
-      matcher: /^\.([^\s:.]+)/,
+      matcher: /^\.([^\s:.)!\[\]]+)/,
       runStep: function (context, match) {
         context.filterScope(function (component) {
           if (TestUtils.isDOMComponent(component) && component.className) {
