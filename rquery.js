@@ -99,7 +99,7 @@
   }
 
   function includeCompositeComponents (component) {
-    if (component._renderedComponent) {
+    if (component && component._renderedComponent) {
       return [component, component._renderedComponent];
     }
 
