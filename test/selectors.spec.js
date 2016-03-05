@@ -92,6 +92,16 @@ describe('Selectors', function () {
       this.$r = run('div p');
       expect(this.$r).to.have.length(2);
     });
+
+    it('finds composite components that are descendants of composite components', function () {
+      this.$r = run('MyComponent ChildComponent');
+      expect(this.$r).to.have.length(1);
+    });
+
+    it('finds composite components that are descendants of DOM components', function () {
+      this.$r = run('div ChildComponent');
+      expect(this.$r).to.have.length(1);
+    });
   });
 
   describe('child selector', function () {
@@ -118,20 +128,23 @@ describe('Selectors', function () {
         this.$r = run('div > button');
       });
 
-      it('finds the button component', function () {
-        expect(this.$r).to.have.length(2);
+      it('finds the button components', function () {
+        expect(this.$r).to.have.length(3);
+      });
+
+      it('finds the composite component', function () {
+        expect(TestUtils.isCompositeComponentWithType(this.$r[1], this.childComponent)).to.be.true;
       });
     });
 
-    describe('internal composite components', function () {
-      before(function () {
-        this.$r = run('div > ChildComponent');
-      });
+    it('finds composite components that are children of composite components', function () {
+      this.$r = run('MyComponent > ChildComponent');
+      expect(this.$r).to.have.length(1);
+    });
 
-      it('finds the child component', function () {
-        expect(this.$r).to.have.length(1);
-        expect(this.$r[0]).to.be.instanceOf(this.childComponent);
-      });
+    it('finds composite components that are children of DOM components', function () {
+      this.$r = run('div > ChildComponent');
+      expect(this.$r).to.have.length(1);
     });
   });
 
@@ -221,7 +234,7 @@ describe('Selectors', function () {
 
   describe('index selector', function () {
     it('matches the indexed element', function () {
-      this.$r = run('div[0]');
+      this.$r = run('div[1]');
 
       expect(this.$r).to.have.length(1);
       expect(this.$r[0].tagName).to.eql('DIV');
@@ -229,7 +242,7 @@ describe('Selectors', function () {
     });
 
     it('matches nothing if index out of range', function () {
-      this.$r = run('div[2]');
+      this.$r = run('div[3]');
 
       expect(this.$r).to.have.length(0);
     });
@@ -418,9 +431,11 @@ describe('Selectors', function () {
         this.$r = run('div :not(p)');
       });
 
-      it('matches all descendants that do not match the given selector', function () {
-        expect(this.$r).to.have.length(7);
+      it('finds all the descendants that do not match the given selector', function () {
+        expect(this.$r).to.have.length(8);
+      });
 
+      it('the matched descendants have the expected tag names', function () {
         expect(this.$r.components.map(function (component) {
           return component.tagName;
         })).to.eql([
@@ -428,11 +443,14 @@ describe('Selectors', function () {
           'A',
           'BUTTON',
           'SPAN',
+          undefined,
           'BUTTON',
           'DIV',
           'SPAN'
         ]);
+      });
 
+      it('the matched descendants have the expected class names', function () {
         expect(this.$r.components.map(function (component) {
           return component.className;
         })).to.eql([
@@ -440,10 +458,15 @@ describe('Selectors', function () {
           'button',
           'button button-default',
           '',
+          undefined,
           'child-component',
           '',
           ''
         ]);
+      });
+
+      it('the composite component is matched', function () {
+        expect(TestUtils.isCompositeComponentWithType(this.$r[4], this.childComponent)).to.be.true;
       });
     });
 
@@ -487,16 +510,20 @@ describe('Selectors', function () {
         this.$r = run('div :not(p, button, span)');
       });
 
-      it('matches all children that do not match the given selector', function () {
+      it('finds all the descendants that do not match any of the union expressions', function () {
         expect(this.$r).to.have.length(2);
+      });
 
+      it('the matched descendants have the expected tag names', function () {
         expect(this.$r.components.map(function (component) {
           return component.tagName;
         })).to.eql([
           'A',
           'DIV'
         ]);
+      });
 
+      it('the matched descendants have the expected class names', function () {
         expect(this.$r.components.map(function (component) {
           return component.className;
         })).to.eql([

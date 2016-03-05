@@ -40,8 +40,37 @@
     }
   }
 
+  function findDescendantsInContext (context, onlyChildren) {
+    var prefixes = _.map(context.currentScope, function (component) {
+          return rquery_getReactId(component) + '.';
+        });
+
+    return rquery_findAllInRenderedTree(context._origRootComponent, function (descendant) {
+      var descendantDepth = componentDepth(descendant);
+
+      return _.any(prefixes, function (prefix) {
+        var depth,
+            descendantId = rquery_getReactId(descendant).substring(0, prefix.length);
+
+        if (onlyChildren) {
+          depth = reactIdDepth(descendantId);
+
+          if (depth !== descendantDepth) {
+            return false;
+          }
+        }
+
+        return descendantId === prefix;
+      });
+    });
+  }
+
+  function reactIdDepth (reactId) {
+    return reactId.split('.').length;
+  }
+
   function componentDepth (component) {
-    return rquery_getReactId(component).split('.').length;
+    return reactIdDepth(rquery_getReactId(component));
   }
 
   function rquery_getDOMNode (component) {
@@ -130,25 +159,7 @@
     {
       matcher: /^\s*>\s*/,
       runStep: function (context, match) {
-        var newScope = _(context.currentScope)
-            .map(function (component) {
-              var depth = componentDepth(component),
-                  prefix = rquery_getReactId(component) + '.',
-                  prefixLength = prefix.length;
-
-              return rquery_findAllInRenderedTree(context._origRootComponent, function (descendant) {
-                var descendantDepth = componentDepth(descendant),
-                    reactId = rquery_getReactId(descendant).substring(0, prefixLength);
-
-                return depth + 1 === descendantDepth && reactId === prefix;
-              });
-            })
-            .compact()
-            .flatten()
-            .map(includeCompositeComponents)
-            .flatten()
-            .value();
-
+        var newScope = findDescendantsInContext(context, true);
         context.setScope(newScope);
       }
     },
@@ -162,7 +173,7 @@
     {
       matcher: /^\s+/,
       runStep: function (context, match) {
-        var newScope = getDescendants(context.currentScope, false);
+        var newScope = findDescendantsInContext(context);
         context.setScope(newScope);
       }
     },
@@ -188,11 +199,13 @@
       matcher: /^([a-z]\w*)/,
       runStep: function (context, match) {
         context.filterScope(function (component) {
-          if (TestUtils.isDOMComponent(component)) {
-            return component.tagName === match[1].toUpperCase();
+          // if the component is composite, then look at its DOM node to match
+          // this allows the composite component to be kept in the context
+          if (TestUtils.isCompositeComponent(component)) {
+            component = rquery_getDOMNode(component);
           }
 
-          return false;
+          return component.tagName.toUpperCase() === match[1].toUpperCase();
         });
       }
     },
