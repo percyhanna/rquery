@@ -1,42 +1,38 @@
 describe('Selectors', function () {
-  var reactClass, component;
+  var MyComponent = React.createClass({
+    displayName: "MyComponent",
+
+    render: function () {
+      return (
+        React.createElement('div', { id: 'my-component', className: 'my-class some-other-class' },
+          React.createElement('p', {}, 'Hello, world!'),
+          React.createElement('p', {}, React.createElement('span', {}, 'not descendant')),
+          React.createElement('a', { className: 'button', target: '_blank', 'data-something': 'hello ' }, 'Click me!'),
+          React.createElement('button', { className: 'button button-default' }, 'Save'),
+          React.createElement('span', {}, 'descendant'),
+          React.createElement(ChildComponent),
+          React.createElement('div', {}, React.createElement('span', {}, 'not a child of p'))
+        )
+      );
+    }
+  });
+
+  var ChildComponent = React.createClass({
+    displayName: 'ChildComponent',
+
+    render: function () {
+      return (
+        React.createElement('button', { className: 'child-component' }, 'my child component')
+      );
+    }
+  });
 
   var TestUtils = React.addons.TestUtils;
 
   function run (selector) {
-    component = TestUtils.renderIntoDocument(React.createElement(reactClass));
+    var component = TestUtils.renderIntoDocument(React.createElement(MyComponent));
     return $R(component, selector);
   };
-
-  before(function () {
-    var childComponent = this.childComponent = React.createClass({
-      displayName: 'ChildComponent',
-
-      render: function () {
-        return (
-          React.createElement('button', { className: 'child-component' }, 'my child component')
-        );
-      }
-    });
-
-    reactClass = React.createClass({
-      displayName: "MyComponent",
-
-      render: function () {
-        return (
-          React.createElement('div', { id: 'my-component', className: 'my-class some-other-class' },
-            React.createElement('p', {}, 'Hello, world!'),
-            React.createElement('p', {}, React.createElement('span', {}, 'not descendant')),
-            React.createElement('a', { className: 'button', target: '_blank', 'data-something': 'hello ' }, 'Click me!'),
-            React.createElement('button', { className: 'button button-default' }, 'Save'),
-            React.createElement('span', {}, 'descendant'),
-            React.createElement(childComponent),
-            React.createElement('div', {}, React.createElement('span', {}, 'not a child of p'))
-          )
-        );
-      }
-    });
-  });
 
   describe('text description of component', function () {
     before(function () {
@@ -48,7 +44,7 @@ describe('Selectors', function () {
     });
 
     it('component is instance of MyComponent', function () {
-      expect(this.$r[0]).to.be.componentOfType(reactClass);
+      expect(this.$r[0]).to.be.componentOfType(MyComponent);
     });
   });
 
@@ -133,7 +129,7 @@ describe('Selectors', function () {
       });
 
       it('finds the composite component', function () {
-        expect(TestUtils.isCompositeComponentWithType(this.$r[1], this.childComponent)).to.be.true;
+        expect(TestUtils.isCompositeComponentWithType(this.$r[1], ChildComponent)).to.be.true;
       });
     });
 
@@ -466,7 +462,7 @@ describe('Selectors', function () {
       });
 
       it('the composite component is matched', function () {
-        expect(TestUtils.isCompositeComponentWithType(this.$r[4], this.childComponent)).to.be.true;
+        expect(TestUtils.isCompositeComponentWithType(this.$r[4], ChildComponent)).to.be.true;
       });
     });
 
