@@ -15,6 +15,8 @@
 }(function (_, React, ReactDOM, TestUtils) {
   'use strict';
 
+  var showCompositeWarning = true;
+
   function isArray (arr) {
     return Object.prototype.toString.call(arr) === '[object Array]';
   }
@@ -40,8 +42,16 @@
     }
   }
 
+  function findDescendantsInContext (context, onlyChildren) {
+    return getDescendants(context._origRootComponent, context.currentScope, onlyChildren);
+  }
+
+  function reactIdDepth (reactId) {
+    return reactId.split('.').length;
+  }
+
   function componentDepth (component) {
-    return rquery_getReactId(component).split('.').length;
+    return reactIdDepth(rquery_getReactId(component));
   }
 
   function rquery_getDOMNode (component) {
@@ -76,26 +86,42 @@
     }
   }
 
-  function getDescendants (components, includeSelf) {
-    var index;
-
-    return _(components)
-      .map(function (component) {
-        var components = rquery_findAllInRenderedTree(component, function () {
-          return true;
+  function getDescendants (root, components, onlyChildren, includeSelf) {
+    var prefixes = _.map(components, function (component) {
+          return rquery_getReactId(component) + '.';
         });
 
-        if (!includeSelf) {
-          while ((index = components.indexOf(component)) !== -1) {
-            components.splice(index, 1)
+    return rquery_findAllInRenderedTree(root, function (descendant) {
+      var descendantId,
+          descendantDepth = componentDepth(descendant);
+
+      if (includeSelf) {
+        // the prefix includes a trailing '.', so check for that
+        descendantId = rquery_getReactId(descendant) + '.';
+
+        if (_.contains(prefixes, descendantId)) {
+          return true;
+        }
+      }
+
+      return _.any(prefixes, function (prefix) {
+        var depth,
+            descendantPrefix = rquery_getReactId(descendant).substring(0, prefix.length);
+
+        if (onlyChildren) {
+          depth = reactIdDepth(descendantPrefix);
+
+          // The prefix includes a trailing '.', so the prefix depth will
+          // actually be equal to all of its children's depth. Skip any
+          // components that are not at this depth, since they aren't children.
+          if (depth !== descendantDepth) {
+            return false;
           }
         }
 
-        return components;
-      })
-      .flatten()
-      .uniq()
-      .value();
+        return descendantPrefix === prefix;
+      });
+    });
   }
 
   function includeCompositeComponents (component) {
@@ -130,25 +156,7 @@
     {
       matcher: /^\s*>\s*/,
       runStep: function (context, match) {
-        var newScope = _(context.currentScope)
-            .map(function (component) {
-              var depth = componentDepth(component),
-                  prefix = rquery_getReactId(component) + '.',
-                  prefixLength = prefix.length;
-
-              return rquery_findAllInRenderedTree(context._origRootComponent, function (descendant) {
-                var descendantDepth = componentDepth(descendant),
-                    reactId = rquery_getReactId(descendant).substring(0, prefixLength);
-
-                return depth + 1 === descendantDepth && reactId === prefix;
-              });
-            })
-            .compact()
-            .flatten()
-            .map(includeCompositeComponents)
-            .flatten()
-            .value();
-
+        var newScope = findDescendantsInContext(context, true);
         context.setScope(newScope);
       }
     },
@@ -162,7 +170,7 @@
     {
       matcher: /^\s+/,
       runStep: function (context, match) {
-        var newScope = getDescendants(context.currentScope, false);
+        var newScope = findDescendantsInContext(context);
         context.setScope(newScope);
       }
     },
@@ -188,11 +196,13 @@
       matcher: /^([a-z]\w*)/,
       runStep: function (context, match) {
         context.filterScope(function (component) {
-          if (TestUtils.isDOMComponent(component)) {
-            return component.tagName === match[1].toUpperCase();
+          // if the component is composite, then look at its DOM node to match
+          // this allows the composite component to be kept in the context
+          if (TestUtils.isCompositeComponent(component)) {
+            component = rquery_getDOMNode(component);
           }
 
-          return false;
+          return component.tagName.toUpperCase() === match[1].toUpperCase();
         });
       }
     },
@@ -267,7 +277,7 @@
       matcher: /^:contains\(((?:\\\)|.)*)\)/,
       runStep: function (context, match) {
         context.filterScope(function (component) {
-          return $R(component).text().indexOf(match[1]) !== -1;
+          return new rquery(component, context._origRootComponent).text().indexOf(match[1]) !== -1;
         });
       }
     }
@@ -343,7 +353,7 @@
     this.rootComponents = rootComponents;
     this._origRootComponent = origRootComponent;
     this.results = [];
-    this.defaultScope = getDescendants(rootComponents, true);
+    this.defaultScope = getDescendants(origRootComponent, rootComponents, false, true);
     this.resetScope();
   }
 
@@ -390,7 +400,7 @@
 
     runSteps(steps, context);
 
-    return new rquery(context.results);
+    return new rquery(context.results, this._rootComponent);
   };
 
   rquery.prototype.findComponent = function (type) {
@@ -404,7 +414,7 @@
   };
 
   rquery.prototype.at = function (index) {
-    return new rquery(this.components[index]);
+    return new rquery(this.components[index], this._rootComponent);
   };
 
   rquery.prototype._generate = function (predicate) {
@@ -412,7 +422,7 @@
       return TestUtils.findAllInRenderedTree(component, predicate);
     }));
 
-    return new rquery(matches);
+    return new rquery(matches, this._rootComponent);
   };
 
   rquery.prototype.simulateEvent = function (eventName, eventData) {
@@ -584,15 +594,18 @@
     };
   });
 
-  var $R = function (components, selector) {
+  var $R = function (component, selector) {
     var $r;
 
-    if (isArray(components)) {
+    if (isArray(component)) {
       throw new Error('Cannot initialize an rquery object with an array of components. This prevents rquery from traversing the tree as necessary.');
+    } else if (!TestUtils.isCompositeComponent(component) && showCompositeWarning) {
+      showCompositeWarning = false;
+      window.console && console.warn('Initializing an rquery object with a DOM component (really just a DOM node in React 0.14) prevents rquery from properly traversing the React tree. For best results, initialize your rquery object with a composite component.');
     }
 
     // pass in root component to constructor
-    $r = new rquery(components, components);
+    $r = new rquery(component, component);
 
     if (selector) {
       return $r.find(selector);
