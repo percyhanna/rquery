@@ -15,6 +15,8 @@
 }(function (_, React, ReactDOM, TestUtils) {
   'use strict';
 
+  var showCompositeWarning = true;
+
   function isArray (arr) {
     return Object.prototype.toString.call(arr) === '[object Array]';
   }
@@ -597,6 +599,9 @@
 
     if (isArray(component)) {
       throw new Error('Cannot initialize an rquery object with an array of components. This prevents rquery from traversing the tree as necessary.');
+    } else if (!TestUtils.isCompositeComponent(component) && showCompositeWarning) {
+      showCompositeWarning = false;
+      window.console && console.warn('Initializing an rquery object with a DOM component (really just a DOM node in React 0.14) prevents rquery from properly traversing the React tree. For best results, initialize your rquery object with a composite component.');
     }
 
     // pass in root component to constructor
