@@ -29,8 +29,14 @@ describe('Selectors', function () {
 
   var TestUtils = React.addons.TestUtils;
 
-  function run (selector) {
-    var component = TestUtils.renderIntoDocument(React.createElement(MyComponent));
+  function run (selector, element) {
+    var component;
+
+    if (!element) {
+      element = React.createElement(MyComponent)
+    }
+
+    component = TestUtils.renderIntoDocument(element);
     return $R(component, selector);
   };
 
@@ -59,6 +65,31 @@ describe('Selectors', function () {
 
     it('component is instance of "a" tag', function () {
       expect(this.$r[0]).to.be.componentWithTag('a');
+    });
+  });
+
+  describe('chained calls to find', function () {
+    it('correctly matches composite components', function () {
+      this.$r = run('div').find('ChildComponent');
+      expect(this.$r).to.have.length(1);
+    });
+
+    it('matches composite components chained from a DOM component', function () {
+      var TestComponent = React.createClass({
+        render: function () {
+          return (
+            React.createElement('div', {},
+              React.createElement('div', { className: 'my-class' },
+                React.createElement(ChildComponent)
+              )
+            )
+          );
+        }
+      });
+
+      this.$r = run('', React.createElement(TestComponent));
+
+      expect(this.$r.find('.my-class').find('ChildComponent')).to.have.length(1);
     });
   });
 
