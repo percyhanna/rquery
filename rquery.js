@@ -592,15 +592,15 @@
     };
   });
 
-  var $R = function (components, selector) {
+  var $R = function (component, selector) {
     var $r;
 
-    if (isArray(components)) {
+    if (isArray(component)) {
       throw new Error('Cannot initialize an rquery object with an array of components. This prevents rquery from traversing the tree as necessary.');
     }
 
     // pass in root component to constructor
-    $r = new rquery(components, components);
+    $r = new rquery(component, component);
 
     if (selector) {
       return $r.find(selector);
