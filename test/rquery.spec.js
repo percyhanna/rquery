@@ -4,7 +4,7 @@ describe('#findComponent', function () {
   before(function () {
     this.reactClass = React.createClass({
       render: function () {
-        return React.createElement('p');
+        return React.createElement('p', this.props);
       }
     });
 
@@ -19,16 +19,35 @@ describe('#findComponent', function () {
   it('component is instance of MyComponent', function () {
     expect(this.$r[0]).to.be.componentOfType(this.reactClass);
   });
+
+  describe('when the rquery is shallow rendered', function () {
+    before(function () {
+      this.renderer = TestUtils.createRenderer();
+      this.element = React.createElement(this.reactClass, {}, React.createElement(this.reactClass))
+      this.renderer.render(this.element);
+
+      this.$r = $R(this.renderer.getRenderOutput());
+    });
+
+    it('finds the component', function () {
+      expect(this.$r.findComponent(this.reactClass)).to.have.length(1);
+    });
+
+    it('the component is the correct type', function () {
+      expect(this.$r.findComponent(this.reactClass)[0].type).to.equal(this.reactClass);
+    });
+  });
 });
 
 describe('#get', function () {
   before(function () {
-    this.$r = $R('p');
+    this.component = TestUtils.renderIntoDocument(React.createElement('div', { 'data-something': 123 }));
+    this.$r = $R(this.component);
   });
 
   describe('when accessing a valid index', function () {
     it('returns the component directly', function () {
-      expect(this.$r.get(0)).to.equal('p');
+      expect(this.$r.get(0)).to.equal(this.component);
     });
   });
 
@@ -324,6 +343,10 @@ describe('#checked', function () {
 });
 
 describe('.isRQuery', function () {
+  before(function () {
+    this.component = TestUtils.renderIntoDocument(React.createElement('div', { 'data-something': 123 }));
+  });
+
   it('it returns false for non rquery objects', function() {
     expect($R.isRQuery('abc')).to.be.false;
     expect($R.isRQuery(123)).to.be.false;
@@ -331,14 +354,16 @@ describe('.isRQuery', function () {
   });
 
   it('it returns true for rquery objects', function() {
-    expect($R.isRQuery($R())).to.be.true;
-    expect($R.isRQuery($R().at(0))).to.be.true;
+    expect($R.isRQuery($R(this.component))).to.be.true;
+    expect($R.isRQuery($R(this.component).at(0))).to.be.true;
   });
 });
 
 describe('.extend', function () {
   before(function () {
-    this._builtInFind = $R().find;
+    this.component = TestUtils.renderIntoDocument(React.createElement('div', { 'data-something': 123 }));
+
+    this._builtInFind = $R(this.component).find;
 
     $R.extend({
       find: function () {}, // should not allow overriding a built-in method
@@ -346,7 +371,8 @@ describe('.extend', function () {
         return 123;
       }
     });
-    this.$r = $R();
+
+    this.$r = $R(this.component);
   });
 
   it('does not allow overriding built-in methods', function() {

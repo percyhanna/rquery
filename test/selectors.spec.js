@@ -1,4 +1,4 @@
-describe('Selectors', function () {
+function runSelectors (shallow) {
   var MyComponent = React.createClass({
     displayName: "MyComponent",
 
@@ -29,28 +29,86 @@ describe('Selectors', function () {
 
   var TestUtils = React.addons.TestUtils;
 
+  function getProp (component, prop) {
+    if (TestUtils.isDOMComponent(component)) {
+      if (prop === 'className') {
+        prop = 'class';
+      }
+
+      if (component.hasAttribute(prop)) {
+        return component.getAttribute(prop);
+      }
+    } else {
+      return component.props[prop];
+    }
+  }
+
+  function expectType (component, type) {
+    if (shallow) {
+      expect(component.type).to.equal(type);
+    } else {
+      if (typeof type === 'string') {
+        expect(component).to.be.componentWithTag(type);
+      } else {
+        expect(component).to.be.componentOfType(type);
+      }
+    }
+  }
+
+  function expectAttribute (component, attribute) {
+    var hasAttribute;
+
+    if (shallow) {
+      hasAttribute = attribute in component.props;
+    } else {
+      hasAttribute = component.hasAttribute(attribute);
+    }
+
+    expect(hasAttribute).to.be.true;
+  }
+
+  function className (component) {
+    return getProp(component, 'className');
+  }
+
+  function tagName (component) {
+    if (shallow) {
+      if (typeof component.type === 'string') {
+        return component.type.toUpperCase();
+      }
+    } else {
+      return component.tagName;
+    }
+  }
+
   function run (selector, element) {
-    var component;
+    var component, renderer;
 
     if (!element) {
       element = React.createElement(MyComponent)
     }
 
-    component = TestUtils.renderIntoDocument(element);
-    return $R(component, selector);
+    if (shallow) {
+      renderer = TestUtils.createRenderer();
+      renderer.render(element);
+      return $R(renderer.getRenderOutput(), selector);
+    } else {
+      component = TestUtils.renderIntoDocument(element);
+      return $R(component, selector);
+    }
   };
 
   describe('text description of component', function () {
     before(function () {
-      this.$r = run('MyComponent');
+      this.$r = run('ChildComponent');
     });
 
     it('finds one component', function () {
       expect(this.$r).to.have.length(1);
     });
 
-    it('component is instance of MyComponent', function () {
-      expect(this.$r[0]).to.be.componentOfType(MyComponent);
+    it('component is instance of ChildComponent', function () {
+      expectType(this.$r[0], ChildComponent);
     });
   });
 
@@ -64,7 +122,7 @@ describe('Selectors', function () {
     });
 
     it('component is instance of "a" tag', function () {
-      expect(this.$r[0]).to.be.componentWithTag('a');
+      expectType(this.$r[0], 'a');
     });
   });
 
@@ -103,9 +161,9 @@ describe('Selectors', function () {
     });
 
     it('components are found in union order, then document order', function () {
-      expect(this.$r[0]).to.be.componentWithTag('a');
-      expect(this.$r[1]).to.be.componentWithTag('p');
-      expect(this.$r[2]).to.be.componentWithTag('p');
+      expectType(this.$r[0], 'a');
+      expectType(this.$r[1], 'p');
+      expectType(this.$r[2], 'p');
     });
   });
 
@@ -120,10 +178,12 @@ describe('Selectors', function () {
       expect(this.$r).to.have.length(2);
     });
 
-    it('finds composite components that are descendants of composite components', function () {
-      this.$r = run('MyComponent ChildComponent');
-      expect(this.$r).to.have.length(1);
-    });
+    if (!shallow) {
+      it('finds composite components that are descendants of composite components', function () {
+        this.$r = run('MyComponent ChildComponent');
+        expect(this.$r).to.have.length(1);
+      });
+    }
 
     it('finds composite components that are descendants of DOM components', function () {
       this.$r = run('div ChildComponent');
@@ -150,24 +210,26 @@ describe('Selectors', function () {
       });
     });
 
-    describe('internal composite DOM components', function () {
-      before(function () {
-        this.$r = run('div > button');
+    if (!shallow) {
+      describe('internal composite DOM components', function () {
+        before(function () {
+          this.$r = run('div > button');
+        });
+
+        it('finds the button components', function () {
+          expect(this.$r).to.have.length(3);
+        });
+
+        it('finds the composite component', function () {
+          expect(TestUtils.isCompositeComponentWithType(this.$r[1], ChildComponent)).to.be.true;
+        });
       });
 
-      it('finds the button components', function () {
-        expect(this.$r).to.have.length(3);
+      it('finds composite components that are children of composite components', function () {
+        this.$r = run('MyComponent > ChildComponent');
+        expect(this.$r).to.have.length(1);
       });
-
-      it('finds the composite component', function () {
-        expect(TestUtils.isCompositeComponentWithType(this.$r[1], ChildComponent)).to.be.true;
-      });
-    });
-
-    it('finds composite components that are children of composite components', function () {
-      this.$r = run('MyComponent > ChildComponent');
-      expect(this.$r).to.have.length(1);
-    });
+    }
 
     it('finds composite components that are children of DOM components', function () {
       this.$r = run('div > ChildComponent');
@@ -175,25 +237,27 @@ describe('Selectors', function () {
     });
   });
 
-  describe('composite selector with child selector', function () {
-    before(function () {
-      this.$r = run('MyComponent > span');
-    });
-
-    it('finds all child span components', function () {
-      expect(this.$r).to.have.length(1);
-    });
-
-    describe('composite component\'s DOM component', function () {
+  if (!shallow) {
+    describe('composite selector with child selector', function () {
       before(function () {
-        this.$r = run('MyComponent > div');
+        this.$r = run('MyComponent > span');
       });
 
-      it('returns the composite component\'s DOM component', function () {
+      it('finds all child span components', function () {
         expect(this.$r).to.have.length(1);
       });
+
+      describe('composite component\'s DOM component', function () {
+        before(function () {
+          this.$r = run('MyComponent > div');
+        });
+
+        it('returns the composite component\'s DOM component', function () {
+          expect(this.$r).to.have.length(1);
+        });
+      });
     });
-  });
+  }
 
   describe('DOM selector with multiple matches', function () {
     before(function () {
@@ -205,11 +269,11 @@ describe('Selectors', function () {
     });
 
     it('first component is instance of "p" tag', function () {
-      expect(this.$r[0]).to.be.componentWithTag('p');
+      expectType(this.$r[0], 'p');
     });
 
     it('second component is instance of "p" tag', function () {
-      expect(this.$r[1]).to.be.componentWithTag('p');
+      expectType(this.$r[1], 'p');
     });
   });
 
@@ -223,11 +287,11 @@ describe('Selectors', function () {
     });
 
     it('first component is instance of "a" tag', function () {
-      expect(this.$r[0]).to.be.componentWithTag('a');
+      expectType(this.$r[0], 'a');
     });
 
     it('second component is instance of "button" tag', function () {
-      expect(this.$r[1]).to.be.componentWithTag('button');
+      expectType(this.$r[1], 'button');
     });
   });
 
@@ -241,7 +305,7 @@ describe('Selectors', function () {
     });
 
     it('first component is instance of "div" tag', function () {
-      expect(this.$r[0]).to.be.componentWithTag('div');
+      expectType(this.$r[0], 'div');
     });
   });
 
@@ -255,17 +319,17 @@ describe('Selectors', function () {
     });
 
     it('has the correct class names', function () {
-      expect(this.$r[0]).to.have.prop('className', 'my-class some-other-class');
+      expect(className(this.$r[0])).to.equal('my-class some-other-class');
     });
   });
 
   describe('index selector', function () {
     it('matches the indexed element', function () {
-      this.$r = run('div[1]');
+      this.$r = run('button[0]');
 
       expect(this.$r).to.have.length(1);
-      expect(this.$r[0].tagName).to.eql('DIV');
-      expect(this.$r[0].className).to.eql('my-class some-other-class');
+      expect(tagName(this.$r[0])).to.eql('BUTTON');
+      expect(className(this.$r[0])).to.eql('button button-default');
     });
 
     it('matches nothing if index out of range', function () {
@@ -285,11 +349,11 @@ describe('Selectors', function () {
     });
 
     it('component is instance of "a" tag', function () {
-      expect(this.$r[0]).to.be.componentWithTag('a');
+      expectType(this.$r[0], 'a');
     });
 
     it('component has target property', function () {
-      expect(this.$r[0].hasAttribute('target')).to.be.true;
+      expectAttribute(this.$r[0], 'target');
     });
   });
 
@@ -300,7 +364,7 @@ describe('Selectors', function () {
 
     it('finds the correct component', function () {
       expect(this.$r).to.have.length(1);
-      expect(this.$r[0]).to.have.prop('id', 'my-component');
+      expect(getProp(this.$r[0], 'id')).to.equal('my-component');
     });
   });
 
@@ -314,11 +378,11 @@ describe('Selectors', function () {
     });
 
     it('component is instance of "a" tag', function () {
-      expect(this.$r[0]).to.be.componentWithTag('a');
+      expectType(this.$r[0], 'a');
     });
 
     it('component has data-something property', function () {
-      expect(this.$r[0].hasAttribute('data-something')).to.be.true;
+      expectAttribute(this.$r[0], 'data-something');
     });
   });
 
@@ -332,11 +396,11 @@ describe('Selectors', function () {
     });
 
     it('component is instance of "a" tag', function () {
-      expect(this.$r[0]).to.be.componentWithTag('a');
+      expectType(this.$r[0], 'a');
     });
 
     it('component has target property', function () {
-      expect(this.$r[0].hasAttribute('target')).to.be.true;
+      expectAttribute(this.$r[0], 'target');
     });
   });
 
@@ -349,12 +413,12 @@ describe('Selectors', function () {
       expect(this.$r).to.have.length(1);
     });
 
-    it('component is instance of "a" tag', function () {
-      expect(this.$r[0]).to.be.componentWithTag('a');
+    it('component is instance of "div" tag', function () {
+      expectType(this.$r[0], 'div');
     });
 
     it('component has target property', function () {
-      expect(this.$r[0].className).to.equal('my-class some-other-class');
+      expect(className(this.$r[0])).to.equal('my-class some-other-class');
     });
   });
 
@@ -367,12 +431,12 @@ describe('Selectors', function () {
       expect(this.$r).to.have.length(1);
     });
 
-    it('component is instance of "a" tag', function () {
-      expect(this.$r[0]).to.be.componentWithTag('a');
+    it('component is instance of "div" tag', function () {
+      expectType(this.$r[0], 'div');
     });
 
     it('component has target property', function () {
-      expect(this.$r[0].className).to.equal('my-class some-other-class');
+      expect(className(this.$r[0])).to.equal('my-class some-other-class');
     });
   });
 
@@ -386,11 +450,11 @@ describe('Selectors', function () {
     });
 
     it('component is instance of "a" tag', function () {
-      expect(this.$r[0]).to.be.componentWithTag('a');
+      expectType(this.$r[0], 'a');
     });
 
     it('component has target property', function () {
-      expect(this.$r[0].hasAttribute('data-something')).to.be.true;
+      expectAttribute(this.$r[0], 'data-something');
     });
   });
 
@@ -404,11 +468,11 @@ describe('Selectors', function () {
     });
 
     it('component is instance of "a" tag', function () {
-      expect(this.$r[0]).to.be.componentWithTag('a');
+      expectType(this.$r[0], 'a');
     });
 
     it('component has target property', function () {
-      expect(this.$r[0].hasAttribute('data-something')).to.be.true;
+      expectAttribute(this.$r[0], 'data-something');
     });
   });
 
@@ -422,11 +486,11 @@ describe('Selectors', function () {
     });
 
     it('component is instance of "a" tag', function () {
-      expect(this.$r[0]).to.be.componentWithTag('a');
+      expectType(this.$r[0], 'a');
     });
 
     it('component has target property', function () {
-      expect(this.$r[0].hasAttribute('data-something')).to.be.true;
+      expectAttribute(this.$r[0], 'data-something');
     });
   });
 
@@ -437,7 +501,7 @@ describe('Selectors', function () {
       });
 
       it('finds all components that contain the text', function () {
-        expect(this.$r).to.have.length(5);
+        expect(this.$r).to.have.length(shallow ? 4 : 5);
       });
     });
 
@@ -459,41 +523,69 @@ describe('Selectors', function () {
       });
 
       it('finds all the descendants that do not match the given selector', function () {
-        expect(this.$r).to.have.length(8);
+        expect(this.$r).to.have.length(shallow ? 7 : 8);
       });
 
       it('the matched descendants have the expected tag names', function () {
-        expect(this.$r.components.map(function (component) {
-          return component.tagName;
-        })).to.eql([
-          'SPAN',
-          'A',
-          'BUTTON',
-          'SPAN',
-          undefined,
-          'BUTTON',
-          'DIV',
-          'SPAN'
-        ]);
+        var expected;
+
+        if (shallow) {
+          expected = [
+            'SPAN',
+            'SPAN',
+            'A',
+            'BUTTON',
+            'SPAN',
+            undefined,
+            'DIV'
+          ];
+        } else {
+          expected = [
+            'SPAN',
+            'A',
+            'BUTTON',
+            'SPAN',
+            undefined,
+            'BUTTON',
+            'DIV',
+            'SPAN'
+          ];
+        }
+
+        expect(this.$r.components.map(tagName)).to.eql(expected);
       });
 
       it('the matched descendants have the expected class names', function () {
-        expect(this.$r.components.map(function (component) {
-          return component.className;
-        })).to.eql([
-          '',
-          'button',
-          'button button-default',
-          '',
-          undefined,
-          'child-component',
-          '',
-          ''
-        ]);
+        var expected;
+
+        if (shallow) {
+          expected = [
+            undefined,
+            undefined,
+            'button',
+            'button button-default',
+            undefined,
+            undefined,
+            undefined
+          ];
+        } else {
+          expected = [
+            undefined,
+            'button',
+            'button button-default',
+            undefined,
+            undefined,
+            'child-component',
+            undefined,
+            undefined
+          ];
+        }
+
+        expect(this.$r.components.map(className)).to.eql(expected);
       });
 
       it('the composite component is matched', function () {
-        expect(TestUtils.isCompositeComponentWithType(this.$r[4], ChildComponent)).to.be.true;
+        expectType(this.$r[shallow ? 5 : 4], ChildComponent);
       });
     });
 
@@ -502,33 +594,62 @@ describe('Selectors', function () {
         this.$r = run('div > :not(p)');
       });
 
-      it('matches all children that do not match the given selector', function () {
-        expect(this.$r).to.have.length(7);
+      it('finds all the children that do not match the given selector', function () {
+        expect(this.$r).to.have.length(shallow ? 6 : 7);
+      });
 
-        // a.button, button.button.button-default, span, Constructor, button.child-component, div, span
-        expect(this.$r.components.map(function (component) {
-          return component.tagName;
-        })).to.eql([
-          'A',
-          'BUTTON',
-          'SPAN',
-          undefined,
-          'BUTTON',
-          'DIV',
-          'SPAN'
-        ]);
+      it('the matched children have the expected tag names', function () {
+        var expected;
 
-        expect(this.$r.components.map(function (component) {
-          return component.className;
-        })).to.eql([
-          'button',
-          'button button-default',
-          '',
-          undefined,
-          'child-component',
-          '',
-          ''
-        ]);
+        if (shallow) {
+          expected = [
+            'SPAN',
+            'A',
+            'BUTTON',
+            'SPAN',
+            undefined,
+            'DIV'
+          ];
+        } else {
+          expected = [
+            'A',
+            'BUTTON',
+            'SPAN',
+            undefined,
+            'BUTTON',
+            'DIV',
+            'SPAN'
+          ];
+        }
+
+        expect(this.$r.components.map(tagName)).to.eql(expected);
+      });
+
+      it('the matched children have the expected class names', function () {
+        var expected;
+
+        if (shallow) {
+          expected = [
+            undefined,
+            'button',
+            'button button-default',
+            undefined,
+            undefined,
+            undefined
+          ];
+        } else {
+          expected = [
+            'button',
+            'button button-default',
+            undefined,
+            undefined,
+            'child-component',
+            undefined,
+            undefined
+          ];
+        }
+
+        expect(this.$r.components.map(className)).to.eql(expected);
       });
     });
 
@@ -538,25 +659,45 @@ describe('Selectors', function () {
       });
 
       it('finds all the descendants that do not match any of the union expressions', function () {
-        expect(this.$r).to.have.length(2);
+        expect(this.$r).to.have.length(shallow ? 3 : 2);
       });
 
-      it('the matched descendants have the expected tag names', function () {
-        expect(this.$r.components.map(function (component) {
-          return component.tagName;
-        })).to.eql([
-          'A',
-          'DIV'
-        ]);
+      it('the matched children have the expected tag names', function () {
+        var expected;
+
+        if (shallow) {
+          expected = [
+            'A',
+            undefined,
+            'DIV'
+          ];
+        } else {
+          expected = [
+            'A',
+            'DIV'
+          ];
+        }
+
+        expect(this.$r.components.map(tagName)).to.eql(expected);
       });
 
-      it('the matched descendants have the expected class names', function () {
-        expect(this.$r.components.map(function (component) {
-          return component.className;
-        })).to.eql([
-          'button',
-          ''
-        ]);
+      it('the matched children have the expected class names', function () {
+        var expected;
+
+        if (shallow) {
+          expected = [
+            'button',
+            undefined,
+            undefined
+          ];
+        } else {
+          expected = [
+            'button',
+            undefined
+          ];
+        }
+
+        expect(this.$r.components.map(className)).to.eql(expected);
       });
     });
 
@@ -582,4 +723,12 @@ describe('Selectors', function () {
       }).to.throw('Syntax error, unmatched )');
     });
   });
+}
+
+describe('Normal Selectors', function () {
+  runSelectors(false);
+});
+
+describe('Shallow Selectors', function () {
+  runSelectors(true);
 });
