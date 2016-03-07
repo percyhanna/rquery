@@ -17,6 +17,10 @@
 
   var showCompositeWarning = true;
 
+  function isShallow (component) {
+    return '$$typeof' in component;
+  }
+
   function isArray (arr) {
     return Object.prototype.toString.call(arr) === '[object Array]';
   }
@@ -66,7 +70,15 @@
     return rquery_getDOMNode(component).getAttribute('data-reactid');
   }
 
-  function getComponentProp (component, prop) {
+  function getComponentProp (component, prop, shallow) {
+    if (shallow) {
+      if (prop === 'class') {
+        prop = 'className';
+      }
+
+      return component && component.props && component.props[prop];
+    }
+
     if (TestUtils.isDOMComponent(component)) {
       if (prop === 'className') {
         return component.className;
@@ -86,7 +98,47 @@
     }
   }
 
+  function getShallowChildren (node, recursive) {
+    var children = [];
+
+    if (node && node.props && node.props.children) {
+      children = [].concat(node.props.children);
+    }
+
+    if (recursive) {
+      return _.chain(children)
+              .map(function (child) {
+                return getShallowChildren(child, true);
+              })
+              .flatten()
+              .concat(children)
+              .value();
+    }
+
+    return children;
+  }
+
+  function getShallowDescendants (components, onlyChildren, includeSelf, childTypes) {
+    childTypes = childTypes || 'object';
+
+    return _.chain(components)
+            .map(function (component) {
+              return getShallowChildren(component, !onlyChildren)
+            })
+            .flatten()
+            .concat(includeSelf ? components : [])
+            .unique()
+            .filter(function (child) {
+              return typeof child === childTypes;
+            })
+            .value();
+  }
+
   function getDescendants (root, components, onlyChildren, includeSelf) {
+    if (isShallow(root)) {
+      return getShallowDescendants(components, onlyChildren, includeSelf);
+    }
+
     var prefixes = _.map(components, function (component) {
           return rquery_getReactId(component) + '.';
         });
@@ -190,6 +242,16 @@
 
           return false;
         });
+      },
+      runShallowStep: function (context, match) {
+        context.filterScope(function (component) {
+          if (typeof component.type === 'function') {
+            return (component.type.displayName === match[1]
+                || component.type.name === match[1]);
+          }
+
+          return false;
+        });
       }
     },
     {
@@ -204,15 +266,40 @@
 
           return component.tagName.toUpperCase() === match[1].toUpperCase();
         });
+      },
+      runShallowStep: function (context, match) {
+        context.filterScope(function (component) {
+          if (typeof component.type === 'string') {
+            return component.type.toUpperCase() === match[1].toUpperCase();
+          }
+
+          return false;
+        });
       }
     },
     {
       matcher: /^\.([^\s:.)!\[\]]+)/,
+      matchClass: function (className, match) {
+        var classes = className.split(' ');
+        return classes.indexOf(match[1]) !== -1;
+      },
       runStep: function (context, match) {
+        var self = this;
+
         context.filterScope(function (component) {
           if (TestUtils.isDOMComponent(component) && component.className) {
-            var classes = component.className.split(' ');
-            return classes.indexOf(match[1]) !== -1;
+            return self.matchClass(component.className, match);
+          }
+
+          return false;
+        });
+      },
+      runShallowStep: function (context, match) {
+        var self = this;
+
+        context.filterScope(function (component) {
+          if (component && component.props && component.props.className) {
+            return self.matchClass(component.props.className, match);
           }
 
           return false;
@@ -242,7 +329,7 @@
 
           if (match[2]) {
             var value = match[3].replace('\\"', '"'),
-                prop = String(getComponentProp(component, propName));
+                prop = String(getComponentProp(component, propName, context.shallow));
 
             switch (match[2]) {
               case '=':
@@ -343,13 +430,20 @@
 
   function runSteps (steps, context) {
     steps.forEach(function (step) {
-      step.step.runStep(context, step.match, step.steps);
+      var stepRunner = step.step.runStep;
+
+      if (context.shallow) {
+        stepRunner = step.step.runShallowStep || step.step.runStep;
+      }
+
+      stepRunner.call(step.step, context, step.match, step.steps);
     });
 
     context.saveResults();
   }
 
   function Context (rootComponents, origRootComponent) {
+    this.shallow = isShallow(origRootComponent);
     this.rootComponents = rootComponents;
     this._origRootComponent = origRootComponent;
     this.results = [];
@@ -387,6 +481,7 @@
 
     this.components = components;
     this._rootComponent = _rootComponent;
+    this.shallow = isShallow(_rootComponent);
     this.length = components.length;
 
     for (var i = 0; i < components.length; i++) {
@@ -404,6 +499,13 @@
   };
 
   rquery.prototype.findComponent = function (type) {
+    if (this.shallow) {
+      return this._generate(function (component) {
+        console.log(component);
+        return component.type === type;
+      });
+    }
+
     return this._generate(function (component) {
       return TestUtils.isCompositeComponentWithType(component, type);
     });
@@ -418,14 +520,22 @@
   };
 
   rquery.prototype._generate = function (predicate) {
-    var matches = [].concat.apply([], this.components.map(function (component) {
-      return TestUtils.findAllInRenderedTree(component, predicate);
-    }));
+    var matches;
+
+    if (this.shallow) {
+      matches = _.filter(getShallowDescendants(this.components, false, true), predicate);
+    } else {
+      matches = [].concat.apply([], this.components.map(function (component) {
+        return TestUtils.findAllInRenderedTree(component, predicate);
+      }));
+    }
 
     return new rquery(matches, this._rootComponent);
   };
 
   rquery.prototype.simulateEvent = function (eventName, eventData) {
+    this._notAllowedInShallowMode('simulateEvent');
+
     for (var i = 0; i < this.components.length; i++) {
       TestUtils.Simulate[eventName](rquery_getDOMNode(this.components[i]), eventData);
     }
@@ -434,6 +544,8 @@
   };
 
   rquery.prototype.ensureSimulateEvent = function (eventName, eventData) {
+    this._notAllowedInShallowMode('ensureSimulateEvent');
+
     var name = 'ensure' + eventName[0].toUpperCase() + eventName.substr(1);
 
     if (this.length !== 1) {
@@ -448,12 +560,16 @@
   }
 
   rquery.prototype.clickAndChange = function (clickData, changeData) {
+    this._notAllowedInShallowMode('clickAndChange');
+
     this.click(clickData);
     this.change(changeData);
     return this;
   };
 
   rquery.prototype.ensureClickAndChange = function (clickData, changeData) {
+    this._notAllowedInShallowMode('ensureClickAndChange');
+
     this.ensureSimulateEvent('click', clickData);
     this.ensureSimulateEvent('change', changeData);
     return this;
@@ -474,6 +590,8 @@
   }
 
   rquery.prototype.toggleCheckbox = function (clickData) {
+    this._notAllowedInShallowMode('toggleCheckbox');
+
     this._toggleCheckbox();
     this.clickAndChange(clickData);
 
@@ -481,6 +599,8 @@
   };
 
   rquery.prototype.ensureToggleCheckbox = function (clickData) {
+    this._notAllowedInShallowMode('ensureToggleCheckbox');
+
     if (this.length !== 1) {
       throw new Error('Called ensureToggleCheckbox, but current context has ' + this.length + ' components. ensureToggleCheckbox only works when 1 component is present.');
     }
@@ -497,11 +617,13 @@
     }
 
     if (componentHasProp(this[0], name)) {
-      return getComponentProp(this[0], name);
+      return getComponentProp(this[0], name, this.shallow);
     }
   };
 
   rquery.prototype.state = function (name) {
+    this._notAllowedInShallowMode('state');
+
     if (this.length < 1) {
       throw new Error('$R#state requires at least one component. No components in current scope.');
     }
@@ -510,22 +632,32 @@
   };
 
   rquery.prototype.nodes = function () {
+    this._notAllowedInShallowMode('nodes');
+
     return _.map(this.components, rquery_getDOMNode);
   };
 
   rquery.prototype.text = function () {
+    if (this.shallow) {
+      return getShallowDescendants(this.components, false, true, 'string').join('');
+    }
+
     return _.map(this.nodes(), function(node) {
       return node.innerText || node.textContent;
     }).join('');
   };
 
   rquery.prototype.html = function () {
+    this._notAllowedInShallowMode('html');
+
     return _.map(this.nodes(), function(node) {
       return node.innerHTML || '';
     }).join('');
   };
 
   rquery.prototype.val = function (value) {
+    this._notAllowedInShallowMode('val');
+
     if (value !== undefined) {
       _.each(this.components, function(component) {
         var node = rquery_getDOMNode(component);
@@ -545,6 +677,8 @@
   };
 
   rquery.prototype.checked = function (value) {
+    this._notAllowedInShallowMode('checked');
+
     if (value !== undefined) {
       _.each(this.components, function (component) {
         var node = rquery_getDOMNode(component);
@@ -560,6 +694,12 @@
       if (this.components[0]) {
         return rquery_getDOMNode(this.components[0]).checked;
       }
+    }
+  };
+
+  rquery.prototype._notAllowedInShallowMode = function (methodName) {
+    if (this.shallow) {
+      throw new Error('The ' + methodName + '() method is not allowed in shallow rquery objects.');
     }
   };
 
@@ -585,11 +725,15 @@
 
   EVENT_NAMES.forEach(function (eventName) {
     rquery.prototype[eventName] = function (eventData) {
+      this._notAllowedInShallowMode(eventName);
+
       return this.simulateEvent(eventName, eventData);
     };
 
     var name = 'ensure' + eventName[0].toUpperCase() + eventName.substr(1);
     rquery.prototype[name] = function (eventData) {
+      this._notAllowedInShallowMode(name);
+
       return this.ensureSimulateEvent(eventName, eventData);
     };
   });
@@ -599,6 +743,8 @@
 
     if (isArray(component)) {
       throw new Error('Cannot initialize an rquery object with an array of components. This prevents rquery from traversing the tree as necessary.');
+    } else if (typeof component !== 'object') {
+      throw new Error('Must initialize an rquery object with a React component.');
     } else if (!TestUtils.isCompositeComponent(component) && showCompositeWarning) {
       showCompositeWarning = false;
       window.console && console.warn('Initializing an rquery object with a DOM component (really just a DOM node in React 0.14) prevents rquery from properly traversing the React tree. For best results, initialize your rquery object with a composite component.');
