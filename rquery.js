@@ -127,7 +127,7 @@
             })
             .flatten()
             .concat(includeSelf ? components : [])
-            .unique()
+            .uniq()
             .filter(function (child) {
               return typeof child === childTypes;
             })
