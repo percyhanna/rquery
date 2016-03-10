@@ -151,7 +151,7 @@
         // the prefix includes a trailing '.', so check for that
         descendantId = rquery_getReactId(descendant) + '.';
 
-        if (_.contains(prefixes, descendantId)) {
+        if (_.includes(prefixes, descendantId)) {
           return true;
         }
       }
