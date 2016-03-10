@@ -156,7 +156,7 @@
         }
       }
 
-      return _.any(prefixes, function (prefix) {
+      return _.some(prefixes, function (prefix) {
         var depth,
             descendantPrefix = rquery_getReactId(descendant).substring(0, prefix.length);
 
