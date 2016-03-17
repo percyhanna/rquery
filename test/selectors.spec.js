@@ -223,6 +223,17 @@ describe('Selectors', function () {
     });
   });
 
+  describe('class selector followed by attribute selector', function () {
+    before(function () {
+      this.$r = run('.button[target="_blank"]');
+    });
+
+    it('finds the correct component', function () {
+      expect(this.$r).to.have.length(1);
+      expect(this.$r[0].props['data-something']).to.equal('hello ');
+    });
+  });
+
   describe('chained attribute selectors', function () {
     before(function () {
       this.$r = run('div[id="my-component"][class~="my-class"]');
