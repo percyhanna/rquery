@@ -112,6 +112,26 @@ function runSelectors (shallow) {
     });
   });
 
+  describe('text description of connected component', function () {
+    before(function () {
+      this.originalChildComponentDisplayName = ChildComponent.displayName;
+      ChildComponent.displayName = 'Connect(ChildComponent)';
+      this.$r = run('ChildComponent');
+    });
+
+    after(function () {
+      ChildComponent.displayName = this.originalChildComponentDisplayName;
+    });
+
+    it('finds one component', function () {
+      expect(this.$r).to.have.length(1);
+    });
+
+    it('component is instance of ChildComponent', function () {
+      expectType(this.$r[0], ChildComponent);
+    });
+  });
+
   describe('text description of DOM component', function () {
     before(function () {
       this.$r = run('a');

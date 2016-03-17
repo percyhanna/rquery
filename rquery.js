@@ -233,11 +233,15 @@
       runStep: function (context, match) {
         context.filterScope(function (component) {
           if (TestUtils.isCompositeComponent(component)) {
-            return component._reactInternalInstance
+            if (component._reactInternalInstance
                 && component._reactInternalInstance._currentElement
-                && component._reactInternalInstance._currentElement.type
-                && (component._reactInternalInstance._currentElement.type.displayName === match[1]
-                || component._reactInternalInstance._currentElement.type.name === match[1]);
+                && component._reactInternalInstance._currentElement.type) {
+
+              var type = component._reactInternalInstance._currentElement.type;
+              var displayName = (type.displayName || '').replace(/Connect\(([A-Z]\w*)\)/, '$1');
+
+              return (displayName === match[1] || type.name === match[1]);
+            }
           }
 
           return false;
@@ -246,8 +250,8 @@
       runShallowStep: function (context, match) {
         context.filterScope(function (component) {
           if (typeof component.type === 'function') {
-            return (component.type.displayName === match[1]
-                || component.type.name === match[1]);
+            var displayName = (component.type.displayName || '').replace(/Connect\(([A-Z]\w*)\)/, '$1');
+            return (displayName === match[1] || component.type.name === match[1]);
           }
 
           return false;
