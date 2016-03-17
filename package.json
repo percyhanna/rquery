@@ -10,7 +10,7 @@
     "find",
     "testing"
   ],
-  "version": "4.1.2",
+  "version": "4.2.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/percyhanna/rquery"
