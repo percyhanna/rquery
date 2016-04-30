@@ -11,6 +11,7 @@ function runSelectors (shallow) {
           React.createElement('button', { className: 'button button-default' }, 'Save'),
           React.createElement('span', {}, 'descendant'),
           React.createElement(ChildComponent),
+          React.createElement(NullComponent),
           React.createElement('div', {}, React.createElement('span', {}, 'not a child of p'))
         )
       );
@@ -24,6 +25,12 @@ function runSelectors (shallow) {
       return (
         React.createElement('button', { className: 'child-component' }, 'my child component')
       );
+    }
+  });
+
+  var NullComponent = React.createClass({
+    render: function () {
+      return null;
     }
   });
 
@@ -543,7 +550,7 @@ function runSelectors (shallow) {
       });
 
       it('finds all the descendants that do not match the given selector', function () {
-        expect(this.$r).to.have.length(shallow ? 7 : 8);
+        expect(this.$r).to.have.length(shallow ? 8 : 8);
       });
 
       it('the matched descendants have the expected tag names', function () {
@@ -556,6 +563,7 @@ function runSelectors (shallow) {
             'A',
             'BUTTON',
             'SPAN',
+            undefined,
             undefined,
             'DIV'
           ];
@@ -584,6 +592,7 @@ function runSelectors (shallow) {
             undefined,
             'button',
             'button button-default',
+            undefined,
             undefined,
             undefined,
             undefined
@@ -615,7 +624,7 @@ function runSelectors (shallow) {
       });
 
       it('finds all the children that do not match the given selector', function () {
-        expect(this.$r).to.have.length(shallow ? 6 : 7);
+        expect(this.$r).to.have.length(shallow ? 7 : 7);
       });
 
       it('the matched children have the expected tag names', function () {
@@ -627,6 +636,7 @@ function runSelectors (shallow) {
             'A',
             'BUTTON',
             'SPAN',
+            undefined,
             undefined,
             'DIV'
           ];
@@ -655,6 +665,7 @@ function runSelectors (shallow) {
             'button button-default',
             undefined,
             undefined,
+            undefined,
             undefined
           ];
         } else {
@@ -679,7 +690,7 @@ function runSelectors (shallow) {
       });
 
       it('finds all the descendants that do not match any of the union expressions', function () {
-        expect(this.$r).to.have.length(shallow ? 3 : 2);
+        expect(this.$r).to.have.length(shallow ? 4 : 2);
       });
 
       it('the matched children have the expected tag names', function () {
@@ -688,6 +699,7 @@ function runSelectors (shallow) {
         if (shallow) {
           expected = [
             'A',
+            undefined,
             undefined,
             'DIV'
           ];
@@ -707,6 +719,7 @@ function runSelectors (shallow) {
         if (shallow) {
           expected = [
             'button',
+            undefined,
             undefined,
             undefined
           ];

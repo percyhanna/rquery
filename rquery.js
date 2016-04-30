@@ -67,7 +67,13 @@
   }
 
   function rquery_getReactId (component) {
-    return rquery_getDOMNode(component).getAttribute('data-reactid');
+    var node = rquery_getDOMNode(component);
+
+    if (node) {
+      return node.getAttribute('data-reactid');
+    }
+
+    return '';
   }
 
   function getComponentProp (component, prop, shallow) {
@@ -505,7 +511,6 @@
   rquery.prototype.findComponent = function (type) {
     if (this.shallow) {
       return this._generate(function (component) {
-        console.log(component);
         return component.type === type;
       });
     }
