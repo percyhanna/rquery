@@ -241,13 +241,13 @@ describe('#html', function () {
 
   context('when called on multiple components', function() {
     it('returns the inner text of the selected components', function() {
-      expect(this.$r.html()).to.match(new RegExp('<p data-reactid="[^"]+">Te</p><p data-reactid="[^"]+"><strong data-reactid="[^"]+">xt</strong></p>'));
+      expect(this.$r.html()).to.eq('<p>Te</p><p><strong>xt</strong></p>');
     });
   });
 
   context('when called on single component', function() {
     it('returns the inner text of the selected component', function() {
-      expect(this.$r.find('p').at(1).html()).to.match(new RegExp('<strong data-reactid="[^"]+">xt</strong>'));
+      expect(this.$r.find('p').at(1).html()).to.eq('<strong>xt</strong>');
     });
   });
 });
@@ -285,8 +285,8 @@ describe('#val', function () {
       this.$r = $R(this.component);
     });
 
-    it('returns undefined', function () {
-      expect(this.$r.val()).to.be.undefined;
+    it('returns the attribute value', function () {
+      expect(this.$r.val()).to.eq('hello');
       expect(this.spy).to.not.have.beenCalled;
     });
 

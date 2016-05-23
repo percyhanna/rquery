@@ -35,10 +35,14 @@
     }).flatten().value();
   }
 
+  function isDOMComponent (component) {
+    return TestUtils.isDOMComponent(component);
+  }
+
   function rquery_findAllInRenderedTree (component, predicate) {
     var components;
 
-    if (TestUtils.isDOMComponent(component)) {
+    if (isDOMComponent(component)) {
       components = descendantsFromNode(component);
       return _.filter(components, predicate);
     } else {
@@ -50,30 +54,12 @@
     return getDescendants(context._origRootComponent, context.currentScope, onlyChildren);
   }
 
-  function reactIdDepth (reactId) {
-    return reactId.split('.').length;
-  }
-
-  function componentDepth (component) {
-    return reactIdDepth(rquery_getReactId(component));
-  }
-
   function rquery_getDOMNode (component) {
-    if (TestUtils.isDOMComponent(component)) {
+    if (isDOMComponent(component)) {
       return component;
     }
 
     return ReactDOM.findDOMNode(component);
-  }
-
-  function rquery_getReactId (component) {
-    var node = rquery_getDOMNode(component);
-
-    if (node) {
-      return node.getAttribute('data-reactid');
-    }
-
-    return '';
   }
 
   function getComponentProp (component, prop, shallow) {
@@ -85,7 +71,7 @@
       return component && component.props && component.props[prop];
     }
 
-    if (TestUtils.isDOMComponent(component)) {
+    if (isDOMComponent(component)) {
       if (prop === 'className') {
         return component.className;
       } else {
@@ -97,7 +83,7 @@
   }
 
   function componentHasProp (component, prop) {
-    if (TestUtils.isDOMComponent(component)) {
+    if (isDOMComponent(component)) {
       return component.hasAttribute(prop);
     } else {
       return component.props && prop in component.props;
@@ -140,46 +126,57 @@
             .value();
   }
 
+  function injectCompositeComponents (root, nodes) {
+    rquery_findAllInRenderedTree(root, function (component) {
+      var node, index;
+
+      if (TestUtils.isCompositeComponent(component)) {
+        node = rquery_getDOMNode(component);
+        index = nodes.indexOf(node);
+
+        if (index !== -1) {
+          nodes.splice(index, 0, component);
+        }
+      }
+    });
+  }
+
+  /**
+   * Reduces the list of descendants to only DOM nodes. Then, it will splice in
+   * the React components for any composite components.
+   */
+  function getComponentDescendants (root, component, onlyChildren, includeSelf) {
+    var node = rquery_getDOMNode(component),
+        descendants = [];
+
+    if (onlyChildren) {
+      descendants = node.children;
+    } else {
+      descendants = node.getElementsByTagName('*');
+    }
+
+    // convert to array
+    descendants = _.toArray(descendants);
+
+    if (includeSelf) {
+      descendants.unshift(rquery_getDOMNode(component));
+    }
+
+    injectCompositeComponents(root, descendants);
+
+    return descendants;
+  }
+
   function getDescendants (root, components, onlyChildren, includeSelf) {
     if (isShallow(root)) {
       return getShallowDescendants(components, onlyChildren, includeSelf);
     }
 
-    var prefixes = _.map(components, function (component) {
-          return rquery_getReactId(component) + '.';
+    var descendants = _.map(components, function (component) {
+          return getComponentDescendants(root, component, onlyChildren, includeSelf);
         });
 
-    return rquery_findAllInRenderedTree(root, function (descendant) {
-      var descendantId,
-          descendantDepth = componentDepth(descendant);
-
-      if (includeSelf) {
-        // the prefix includes a trailing '.', so check for that
-        descendantId = rquery_getReactId(descendant) + '.';
-
-        if (_.includes(prefixes, descendantId)) {
-          return true;
-        }
-      }
-
-      return _.some(prefixes, function (prefix) {
-        var depth,
-            descendantPrefix = rquery_getReactId(descendant).substring(0, prefix.length);
-
-        if (onlyChildren) {
-          depth = reactIdDepth(descendantPrefix);
-
-          // The prefix includes a trailing '.', so the prefix depth will
-          // actually be equal to all of its children's depth. Skip any
-          // components that are not at this depth, since they aren't children.
-          if (depth !== descendantDepth) {
-            return false;
-          }
-        }
-
-        return descendantPrefix === prefix;
-      });
-    });
+    return [].concat.apply([], descendants);
   }
 
   function includeCompositeComponents (component) {
@@ -274,6 +271,9 @@
             component = rquery_getDOMNode(component);
           }
 
+          if (!component.tagName) {
+            console.log(component);
+          }
           return component.tagName.toUpperCase() === match[1].toUpperCase();
         });
       },
@@ -297,7 +297,7 @@
         var self = this;
 
         context.filterScope(function (component) {
-          if (TestUtils.isDOMComponent(component) && component.className) {
+          if (isDOMComponent(component) && component.className) {
             return self.matchClass(component.className, match);
           }
 
@@ -590,7 +590,7 @@
     for (i = 0; i < this.length; i++) {
       node = this[i];
 
-      if (TestUtils.isDOMComponent(node)) {
+      if (isDOMComponent(node)) {
         if (node.tagName.toUpperCase() === 'INPUT' && node.type.toUpperCase() === 'CHECKBOX') {
           node.checked = !node.checked;
         }
