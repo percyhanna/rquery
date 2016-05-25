@@ -72,10 +72,13 @@
     }
 
     if (isDOMComponent(component)) {
-      if (prop === 'className') {
-        return component.className;
-      } else {
-        return component.getAttribute(prop);
+      switch (prop) {
+        case 'checked':
+        case 'className':
+          return component[prop];
+
+        default:
+          return component.getAttribute(prop);
       }
     } else {
       return component.props[prop];
@@ -84,7 +87,14 @@
 
   function componentHasProp (component, prop) {
     if (isDOMComponent(component)) {
-      return component.hasAttribute(prop);
+      switch (prop) {
+        case 'checked':
+        case 'className':
+          return prop in component;
+
+        default:
+          return component.hasAttribute(prop);
+      }
     } else {
       return component.props && prop in component.props;
     }
@@ -265,10 +275,10 @@
       matcher: /^([a-z]\w*)/,
       runStep: function (context, match) {
         context.filterScope(function (component) {
-          // if the component is composite, then look at its DOM node to match
-          // this allows the composite component to be kept in the context
+          // composite components must be found by their displayName, not its
+          // root DOM node,
           if (TestUtils.isCompositeComponent(component)) {
-            component = rquery_getDOMNode(component);
+            return false;
           }
 
           if (!component.tagName) {
@@ -290,7 +300,13 @@
     {
       matcher: /^\.([^\s:.)!\[\]]+)/,
       matchClass: function (className, match) {
-        var classes = className.split(' ');
+        var classes;
+
+        if (window.SVGAnimatedString && className instanceof SVGAnimatedString) {
+          className = className.animVal;
+        }
+
+        classes = className.split(' ');
         return classes.indexOf(match[1]) !== -1;
       },
       runStep: function (context, match) {
@@ -685,6 +701,14 @@
     }
   };
 
+  rquery.prototype.disabled = function (name) {
+    if (this.length < 1) {
+      throw new Error('$R#disabled requires at least one component. No components in current scope.');
+    }
+
+    return rquery_getDOMNode(this[0]).disabled;
+  };
+
   rquery.prototype.checked = function (value) {
     this._notAllowedInShallowMode('checked');
 
@@ -700,9 +724,11 @@
 
       return this;
     } else {
-      if (this.components[0]) {
-        return rquery_getDOMNode(this.components[0]).checked;
+      if (this.length < 1) {
+        throw new Error('$R#checked requires at least one component. No components in current scope.');
       }
+
+      return rquery_getDOMNode(this[0]).checked;
     }
   };
 
