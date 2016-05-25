@@ -297,6 +297,41 @@ describe('#val', function () {
   });
 });
 
+describe('#disabled', function () {
+  describe('when called on a disabled input', function () {
+    before(function () {
+      this.component = TestUtils.renderIntoDocument(React.createElement('input', { disabled: true }));
+      this.$r = $R(this.component);
+    });
+
+    it('returns true', function () {
+      expect(this.$r.disabled()).to.equal(true);
+    });
+  });
+
+  describe('when called on an enabled input', function () {
+    before(function () {
+      this.component = TestUtils.renderIntoDocument(React.createElement('input', { disabled: false }));
+      this.$r = $R(this.component);
+    });
+
+    it('returns false', function () {
+      expect(this.$r.disabled()).to.equal(false);
+    });
+  });
+
+  describe('when called on a non-input', function () {
+    before(function () {
+      this.component = TestUtils.renderIntoDocument(React.createElement('div'));
+      this.$r = $R(this.component);
+    });
+
+    it('returns undefined', function () {
+      expect(this.$r.disabled()).to.be.undefined;
+    });
+  });
+});
+
 describe('#checked', function () {
   before(function () {
     this.spy = sinon.spy($R.rquery.prototype, 'change');
