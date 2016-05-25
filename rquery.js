@@ -86,10 +86,13 @@
     }
 
     if (TestUtils.isDOMComponent(component)) {
-      if (prop === 'className') {
-        return component.className;
-      } else {
-        return component.getAttribute(prop);
+      switch (prop) {
+        case 'checked':
+        case 'className':
+          return component[prop];
+
+        default:
+          return component.getAttribute(prop);
       }
     } else {
       return component.props[prop];
@@ -98,7 +101,14 @@
 
   function componentHasProp (component, prop) {
     if (TestUtils.isDOMComponent(component)) {
-      return component.hasAttribute(prop);
+      switch (prop) {
+        case 'checked':
+        case 'className':
+          return prop in component;
+
+        default:
+          return component.hasAttribute(prop);
+      }
     } else {
       return component.props && prop in component.props;
     }
@@ -685,6 +695,14 @@
     }
   };
 
+  rquery.prototype.disabled = function (name) {
+    if (this.length < 1) {
+      throw new Error('$R#disabled requires at least one component. No components in current scope.');
+    }
+
+    return rquery_getDOMNode(this[0]).disabled;
+  };
+
   rquery.prototype.checked = function (value) {
     this._notAllowedInShallowMode('checked');
 
@@ -700,9 +718,11 @@
 
       return this;
     } else {
-      if (this.components[0]) {
-        return rquery_getDOMNode(this.components[0]).checked;
+      if (this.length < 1) {
+        throw new Error('$R#checked requires at least one component. No components in current scope.');
       }
+
+      return rquery_getDOMNode(this[0]).checked;
     }
   };
 
