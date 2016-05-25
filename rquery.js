@@ -300,7 +300,13 @@
     {
       matcher: /^\.([^\s:.)!\[\]]+)/,
       matchClass: function (className, match) {
-        var classes = className.split(' ');
+        var classes;
+
+        if (window.SVGAnimatedString && className instanceof SVGAnimatedString) {
+          className = className.animVal;
+        }
+
+        classes = className.split(' ');
         return classes.indexOf(match[1]) !== -1;
       },
       runStep: function (context, match) {
