@@ -268,10 +268,10 @@
       matcher: /^([a-z]\w*)/,
       runStep: function (context, match) {
         context.filterScope(function (component) {
-          // if the component is composite, then look at its DOM node to match
-          // this allows the composite component to be kept in the context
+          // composite components must be found by their displayName, not its
+          // root DOM node,
           if (TestUtils.isCompositeComponent(component)) {
-            component = rquery_getDOMNode(component);
+            return false;
           }
 
           return component.tagName.toUpperCase() === match[1].toUpperCase();

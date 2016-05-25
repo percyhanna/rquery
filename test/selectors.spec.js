@@ -238,21 +238,35 @@ function runSelectors (shallow) {
     });
 
     if (!shallow) {
-      describe('internal composite DOM components', function () {
+      describe('DOM components that are children of DOM components', function () {
         before(function () {
           this.$r = run('div > button');
         });
 
         it('finds the button components', function () {
-          expect(this.$r).to.have.length(3);
+          expect(this.$r).to.have.length(2);
         });
 
-        it('finds the composite component', function () {
-          expect(TestUtils.isCompositeComponentWithType(this.$r[1], ChildComponent)).to.be.true;
+        it('only matches DOM components', function () {
+          expect(this.$r.components.map(tagName)).to.be.eql(['BUTTON', 'BUTTON']);
         });
       });
 
-      it('finds composite components that are children of composite components', function () {
+      describe('composite components that are children of DOM components', function () {
+        before(function () {
+          this.$r = run('div > ChildComponent');
+        });
+
+        it('finds one component', function () {
+          expect(this.$r).to.have.length(1);
+        });
+
+        it('finds the composite component', function () {
+          expect(TestUtils.isCompositeComponentWithType(this.$r[0], ChildComponent)).to.be.true;
+        });
+      });
+
+      it('composite components that are children of composite components', function () {
         this.$r = run('MyComponent > ChildComponent');
         expect(this.$r).to.have.length(1);
       });
@@ -690,7 +704,7 @@ function runSelectors (shallow) {
       });
 
       it('finds all the descendants that do not match any of the union expressions', function () {
-        expect(this.$r).to.have.length(shallow ? 4 : 2);
+        expect(this.$r).to.have.length(shallow ? 4 : 3);
       });
 
       it('the matched children have the expected tag names', function () {
@@ -706,6 +720,7 @@ function runSelectors (shallow) {
         } else {
           expected = [
             'A',
+            undefined,
             'DIV'
           ];
         }
@@ -726,6 +741,7 @@ function runSelectors (shallow) {
         } else {
           expected = [
             'button',
+            undefined,
             undefined
           ];
         }
