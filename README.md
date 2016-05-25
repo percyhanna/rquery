@@ -17,6 +17,11 @@ React tree to make those assertions.
 also provide convenience wrappers for various common test actions, such as event
 dispatching.
 
+## React Version Support
+
+* For React v15, use `rquery` version 5+
+* For React v0.14, use `rquery` version 4.x
+
 ## Setup
 
 ### Node.js, Webpack, Browserify
