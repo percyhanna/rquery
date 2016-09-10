@@ -646,6 +646,24 @@
     }
   };
 
+  rquery.prototype.style = function (name) {
+    var style;
+
+    if (this.length < 1) {
+      throw new Error('$R#style requires at least one component. No components in current scope.');
+    }
+
+    if (this.shallow) {
+      style = getComponentProp(this[0], 'style', this.shallow);
+    } else {
+      style = rquery_getDOMNode(this[0]).style;
+    }
+
+    if (style) {
+      return style[name];
+    }
+  };
+
   rquery.prototype.state = function (name) {
     this._notAllowedInShallowMode('state');
 
