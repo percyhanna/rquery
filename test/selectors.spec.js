@@ -772,6 +772,32 @@ function runSelectors (shallow) {
       }).to.throw('Syntax error, unmatched )');
     });
   });
+
+  describe('#style', function () {
+    before(function () {
+      this.component = TestUtils.renderIntoDocument(React.createElement('div', { style: { height: 123, display: 'none' } }));
+      this.$r = $R(this.component);
+    });
+
+    it('returns a px value for height', function() {
+      expect(this.$r.style('height')).to.eq('123px');
+    });
+
+    it('returns the string value for display property', function() {
+      expect(this.$r.style('display')).to.eq('none');
+    });
+
+    it('returns undefined when no style is defined', function() {
+      expect(this.$r.style('abc')).to.be.undefined;
+    });
+
+    it('throws an error when no component is in the scope', function() {
+      var $r = this.$r;
+      expect(function () {
+        $r.find('p').style('a');
+      }).to.throw('$R#style requires at least one component. No components in current scope.');
+    });
+  });
 }
 
 describe('Normal Selectors', function () {
