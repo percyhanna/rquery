@@ -127,6 +127,16 @@ $r.prop('a')
 Returns the value for the given prop for the first component in the scope. It
 throws an error if the scope has no components.
 
+#### `#style`
+
+```javascript
+$r.style('a')
+```
+
+Returns the value for the given style for the first component in the scope. The
+style value is loaded from the style property. It throws an error if the scope
+has no components.
+
 #### `#state`
 
 ```javascript
