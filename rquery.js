@@ -714,7 +714,11 @@
       return this;
     } else {
       if (this.components[0]) {
-        return rquery_getDOMNode(this.components[0]).value;
+        if ('value' in this.components[0]) {
+          return rquery_getDOMNode(this.components[0]).value;
+        } else {
+          return rquery_getDOMNode(this.components[0]).getAttribute('value');
+        }
       }
     }
   };
