@@ -343,8 +343,7 @@ $R(component, '[href="http://www.github.com/"]');
 
 **Supported Operators**:
 
-`rquery` supports the [CSS Selectors level 3 spec]
-(http://dev.w3.org/csswg/selectors-3/#attribute-selectors):
+`rquery` supports the [CSS Selectors level 3 spec](http://dev.w3.org/csswg/selectors-3/#attribute-selectors):
 
 * `[att="val"]`: equality
 * `[att~="val"]`: whitespace-separated list
