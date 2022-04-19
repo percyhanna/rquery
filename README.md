@@ -2,8 +2,6 @@
 
 This repository is no longer being actively developed. Many newer, more modern, and well-supported alternatives have become available since this project was first created.
 
-[![Build Status](https://travis-ci.org/percyhanna/rquery.svg?branch=master)](https://travis-ci.org/percyhanna/rquery)
-
 # rquery
 A [React](http://facebook.github.io/react/) tree traversal utility similar to
 jQuery, which can be useful for making assertions on your components in your
